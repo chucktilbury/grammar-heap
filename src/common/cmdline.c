@@ -441,33 +441,6 @@ static void parse_long_option(const char* str) {
 }
 
 /*
- * Get a command option by name. If the option does not exist then return NULL.
- */
-const string_t* get_cmd_opt(const char* name) {
-
-    cmdline_entry_t* opt = get_opt_by_name(name);
-    int mark = 0;
-
-    if(opt != NULL)
-        return iterate_string_list(opt->value, &mark);
-    else
-        return NULL;
-}
-
-/*
- * Iterate the option as a list.
- */
-const string_t* iterate_cmd_opt(const char* name, int* mark) {
-
-    cmdline_entry_t* opt = get_opt_by_name(name);
-
-    if(opt != NULL)
-        return iterate_string_list(opt->value, mark);
-    else
-        return NULL;
-}
-
-/*
  * When this is entered, a command line item has been encountered that does not
  * start with a '-'. If there is a option that allows a raw list then the
  * string is stored as it is found. otherwise, it is an "unknown option"
@@ -565,6 +538,33 @@ void parse_cmdline(int argc, char** argv) {
  * APIs called by the user's application
  */
 
+/*
+ * Get a command option by name. If the option does not exist then return NULL.
+ */
+string_t* get_cmd_opt(const char* name) {
+
+    cmdline_entry_t* opt = get_opt_by_name(name);
+    int mark = 0;
+
+    if(opt != NULL)
+        return iterate_string_list(opt->value, &mark);
+    else
+        return NULL;
+}
+
+/*
+ * Iterate the option as a list.
+ */
+string_t* iterate_cmd_opt(const char* name, int* mark) {
+
+    cmdline_entry_t* opt = get_opt_by_name(name);
+
+    if(opt != NULL)
+        return iterate_string_list(opt->value, mark);
+    else
+        return NULL;
+}
+
 void init_cmdline(const char* name, const char* preamble, const char* vers) {
 
     cmdline = _ALLOC_TYPE(cmdline_t);
@@ -616,13 +616,13 @@ void add_cmdline(int short_opt,
     append_ptr_list(cmdline->args, ptr);
 }
 
-void cb_cmdline_help(void) {
+void cmdline_help(void) {
 
     show_cmdline_help();
     exit(1);
 }
 
-void cb_cmdline_vers(void) {
+void cmdline_vers(void) {
 
     show_cmdline_vers();
     exit(1);

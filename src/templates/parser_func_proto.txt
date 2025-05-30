@@ -1,1 +1,0 @@
-ast_{{ast_nterm_name}}_t* parse_{{ast_nterm_name}}(parser_state_t* pstate);

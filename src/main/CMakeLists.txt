@@ -11,8 +11,8 @@ target_link_libraries(${PROJECT_NAME}
     #cord
     parser
     lists
-    generate
-    render
+    #generate
+    #render
     common
-    templates
+    #templates
 )

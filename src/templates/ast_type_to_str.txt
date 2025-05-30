@@ -1,1 +1,0 @@
-    (type == {{ast_type_name}})? "{{ast_nterm_name}}":

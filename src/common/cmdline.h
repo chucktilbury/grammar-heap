@@ -18,7 +18,7 @@ typedef enum {
     CMD_NUM = 0x04,  // type is a number
     CMD_BOOL = 0x08, // type is bool, requires "true" or "false"
     CMD_LIST = 0x10, // a list is accepted by the arg. implies CMD_ARGS.
-    CMD_ANON = 0x20, // an anonymous list
+    CMD_ANON = 0x20, // a list with no command option
 
     // arg attributes
     CMD_REQD = 0x40, // item is required
@@ -44,10 +44,10 @@ void add_cmdline(int short_opt,
 
 void destroy_cmdline(void);
 void parse_cmdline(int argc, char** argv);
-const string_t* get_cmd_opt(const char* name);
-const string_t* iterate_cmd_opt(const char* name, int* mark);
+string_t* get_cmd_opt(const char* name);
+string_t* iterate_cmd_opt(const char* name, int* mark);
 
-void cb_cmdline_help(void);
-void cb_cmdline_vers(void);
+void cmdline_help(void);
+void cmdline_vers(void);
 
 #endif /* _CMDLINE_H_ */

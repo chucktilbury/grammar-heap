@@ -1,7 +1,4 @@
 add_subdirectory(common)
-add_subdirectory(templates)
 add_subdirectory(parser)
 add_subdirectory(lists)
-add_subdirectory(render)
-add_subdirectory(generate)
 add_subdirectory(main)

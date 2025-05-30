@@ -1,9 +1,0 @@
-if(expect_token({{expect_token}})) {
-    consume_token();
-    {{increment_state}}
-    state = {{state_number}};
-}
-else {
-    state = STATE_NO_MATCH;
-}
-

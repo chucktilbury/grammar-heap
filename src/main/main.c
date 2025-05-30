@@ -4,77 +4,33 @@
 #include <string.h>
 #include <errno.h>
 
-//#include "nterm_list.h"
-//#include "pointer_list.h"
 #include "scanner.h"
 #include "parser.h"
 //#include "ast.h"
-#include "lists.h"
-#include "render.h"
-//#include "string_list.h"
-#include "string_buffer.h"
-//#include "nterm_rules.h"
-#include "generate.h"
+#include "cmdline.h"
 
-extern master_list_t* master_list;
+void cmdline(int argc, char** argv) {
 
-void print_terminal_list(void) {
+    init_cmdline("heap", "FSA parser generator", "0.1");
+    add_cmdline('h', "help", NULL, "print this helpful information", NULL, cmdline_help, CMD_NONE);
+    add_cmdline('V', "version", NULL, "show the program version", NULL, cmdline_vers, CMD_NONE);
+    add_cmdline(0, NULL, NULL, NULL, NULL, NULL, CMD_DIV);
+    add_cmdline(0, NULL, "files", "file name to input", NULL, NULL, CMD_REQD|CMD_ANON);
 
-    int mark = 0;
-    int count = 1;
-
-    printf("\n-----------------------------\n");
-    printf("     Terminal List\n");
-    printf("-----------------------------\n");
-
-    term_item_t* term;
-    while(NULL != (term = iterate_term_list(master_list->term_list, &mark)))
-        printf("%3d. %-25s%s\n", count++, raw_string(term->term), raw_string(term->token));
+    parse_cmdline(argc, argv);
 }
 
 int main(int argc, char** argv) {
 
-    if(argc < 2) {
-        fprintf(stderr, "Use: %s filename\n", argv[0]);
-        exit(1);
-    }
+    cmdline(argc, argv);
 
-    yyin = fopen(argv[1], "r");
+    yyin = fopen(raw_string(get_cmd_opt("files")), "r");
     if(yyin == NULL) {
-        fprintf(stderr, "cannot open input file \"%s\": %s", argv[1], strerror(errno));
-        exit(1);
+        fprintf(stderr, "cannot open input file \"%s\": %s\n", argv[1], strerror(errno));
+        cmdline_help();
     }
 
     yyparse();
-
-    make_raw_lists();
-    generate_rules();
-    render();
-
-    // int mark = 0;
-    // nterm_item_t* node;
-    //
-    // while(NULL != (node = iterate_ptr_list(master_list->nterm_list, &mark))) {
-    //     int point = 0;
-    //     string_t* str;
-    //     emit_string_fmt(stdout, "\n// rule_name: %s\n", node->nterm->buffer);
-    //     while(NULL != (str = iterate_string_list(node->rule_comment, &point)))
-    //         emit_string(stdout, str);
-    // }
-    //
-    // mark = 0;
-    // while(NULL != (node = iterate_ptr_list(master_list->nterm_list, &mark))) {
-    //     int point = 0;
-    //     rule_state_t* rule;
-    //     emit_string_fmt(stdout, "\n// rule_name: %s\n", node->nterm->buffer);
-    //     while(NULL != (rule = iterate_ptr_list(node->rule_states, &point))) {
-    //         int thing = 0;
-    //         string_t* str;
-    //         while(NULL != (str = iterate_string_list(rule->out, &thing)))
-    //             emit_string(stdout, str);
-    //     }
-    // }
-
 
     return 0;
 }

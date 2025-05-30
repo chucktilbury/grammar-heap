@@ -1,1 +1,0 @@
-    (type == {{ast_type_name}})? sizeof(ast_{{ast_nterm_name}}_t):
