@@ -13,7 +13,7 @@
 #include "parser.h"
 #include "lists.h"
 
-#include "common.h"
+#include "errors.h"
 
 static void rule_element_list(FILE* fp, rule_element_list_t* node);
 static void rule_element(FILE* fp, rule_element_t* node);

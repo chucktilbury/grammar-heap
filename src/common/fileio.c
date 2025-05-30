@@ -17,7 +17,7 @@
 #include <sys/stat.h>
 #include <linux/limits.h>
 
-#include "strg_list.h"
+#include "string_list.h"
 #include "alloc.h"
 #include "errors.h"
 

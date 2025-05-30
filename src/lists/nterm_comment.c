@@ -5,12 +5,12 @@
  * loop in a parser function. It is intended to be used to verify the validity
  * of the actual function implementation.
  */
-#include "common.h"
 #include "ast.h"
 #include "parser.h"
 
 #include "lists.h"
-#include "strg_list.h"
+#include "errors.h"
+#include "string_list.h"
 
 #define LST crnt_rule->rule_comment
 #define EMIT_LINE(...) append_string_list(LST, create_string_fmt(__VA_ARGS__))

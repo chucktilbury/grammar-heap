@@ -11,7 +11,7 @@
 #ifndef _LISTS_H_
 #define _LISTS_H_
 
-#include "strgs.h"
+#include "string_buffer.h"
 #include "nterm_list.h"
 #include "term_list.h"
 

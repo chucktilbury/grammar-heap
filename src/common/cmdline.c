@@ -8,9 +8,9 @@
 
 #include "cmdline.h"
 #include "alloc.h"
-#include "strg_list.h"
-#include "ptr_list.h"
-#include "strgs.h"
+#include "string_list.h"
+#include "pointer_list.h"
+#include "string_buffer.h"
 
 // This is for options only. The values are stored in the config data
 // structure. It's only used when parsing the command line.
@@ -30,7 +30,7 @@ typedef struct _cmdline_t_ {
     string_t* name;
     string_t* pname;
     int files;
-    ptr_list_t* args;
+    pointer_list_t* args;
 } cmdline_t;
 
 #define EXPECTED(s)                                                                \

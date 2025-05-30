@@ -6,7 +6,6 @@
 #define _NTERM_RULE_STATE_H_
 
 #include "ast.h"
-#include "ptr_list.h"
 
 void init_rule_states(void);
 

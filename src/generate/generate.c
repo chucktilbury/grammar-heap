@@ -8,8 +8,9 @@
 #include "parser.h"
 #include "lists.h"
 
+#include "errors.h"
 #include "nterm_list.h"
-#include "strg_list.h"
+#include "string_list.h"
 
 #define EMIT_LINE(fp, ...) append_string_list(fp, create_string_fmt(__VA_ARGS__))
 

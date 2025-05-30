@@ -18,6 +18,7 @@ grammar_t* root_node;
 #include <stdbool.h>
 #include "ast.h"
 #include "tokens.h"
+#include "pointer_list.h"
 }
 
 // this goes at the bottom of the generated header file.

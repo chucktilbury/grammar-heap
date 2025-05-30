@@ -11,9 +11,10 @@
 
 #include "ast.h"
 #include "parser.h"
+#include "errors.h"
 
 #define USE_TRACE
-#include "common.h"
+#include "trace.h"
 
 #ifdef USE_TRACE
 #define TRACE_TOKEN(t) TRACE("token: \"%s\": %s", raw_string((t)->str), tok_to_str((t)->type))
@@ -269,17 +270,17 @@ ast_node_list_t* create_ast_node_list(void) {
 
 void append_ast_node_list(ast_node_list_t* lst, ast_node_t* ptr) {
 
-    append_ptr_list((ptr_list_t*)lst, (void*)ptr);
+    append_ptr_list((pointer_list_t*)lst, (void*)ptr);
 }
 
 ast_node_t* iterate_ast_node_list(ast_node_list_t* lst, int* post) {
 
-    return (ast_node_t*)iterate_ptr_list((ptr_list_t*)lst, post);
+    return (ast_node_t*)iterate_ptr_list((pointer_list_t*)lst, post);
 }
 
 int len_ast_node_list(ast_node_list_t* lst) {
 
-    return len_ptr_list((ptr_list_t*)lst);
+    return len_ptr_list((pointer_list_t*)lst);
 }
 
 const char* nterm_to_str(ast_type_t type) {

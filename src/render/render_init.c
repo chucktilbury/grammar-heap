@@ -12,9 +12,10 @@
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-#include "strg_list.h"
-#include "strgs.h"
+#include "string_list.h"
+#include "string_buffer.h"
 #include "term_list.h"
 #include "nterm_list.h"
 #include "templates.h"

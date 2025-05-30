@@ -12,7 +12,11 @@
 #include "ast.h"
 #include "parser.h"
 
-#include "common.h"
+#define USE_TRACE
+#include "trace.h"
+
+#include "errors.h"
+#include "alloc.h"
 #include "nterm_list.h"
 #include "lists.h"
 
@@ -68,7 +72,7 @@ static int pop_func_stack(void) {
 static nterm_item_t* crnt_rule = NULL;
 
 // add if unique
-static void add_list(ptr_list_t* lst, nterm_ds_type_t* ptr) {
+static void add_list(pointer_list_t* lst, nterm_ds_type_t* ptr) {
 
     // nterm_ds_type_t* item;
     // int mark = 0;

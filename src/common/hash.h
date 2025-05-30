@@ -4,8 +4,6 @@
 #ifndef _HASH_H_
 #define _HASH_H_
 
-#include <stdlib.h> // size_t
-
 typedef struct {
     const char* key;
     void* data;

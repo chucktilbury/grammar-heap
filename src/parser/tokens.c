@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2025
  */
 
+#include "alloc.h"
 #include "tokens.h"
 #include "parser.h"
 extern int yylineno;

@@ -12,11 +12,10 @@
 #ifndef _NTERM_LIST_H_
 #define _NTERM_LIST_H_
 
-#include "common.h"
 #include "ast.h"
-#include "strg_list.h"
+#include "string_list.h"
 
-typedef ptr_list_t nterm_list_t;
+typedef pointer_list_t nterm_list_t;
 
 // data structure for ds_names
 typedef struct {
@@ -28,7 +27,7 @@ typedef struct {
     string_t* nterm;
     string_t* type;
     ast_node_t* node;
-    ptr_list_t* ds_names;
+    pointer_list_t* ds_names;
     // ptr_list_t* rule_states;
     string_list_t* rule_comment;
 } nterm_item_t;

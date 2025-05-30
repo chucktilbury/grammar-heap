@@ -4,17 +4,16 @@
 #include <string.h>
 #include <errno.h>
 
-#include "nterm_list.h"
-#include "ptr_list.h"
+//#include "nterm_list.h"
+//#include "pointer_list.h"
 #include "scanner.h"
 #include "parser.h"
-#include "ast.h"
-#include "common.h"
+//#include "ast.h"
 #include "lists.h"
 #include "render.h"
-#include "strg_list.h"
-#include "strgs.h"
-#include "nterm_rules.h"
+//#include "string_list.h"
+#include "string_buffer.h"
+//#include "nterm_rules.h"
 #include "generate.h"
 
 extern master_list_t* master_list;

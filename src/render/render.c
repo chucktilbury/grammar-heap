@@ -14,7 +14,7 @@
 
 #include "lists.h"
 #include "render_init.h"
-#include "strgs.h"
+#include "string_buffer.h"
 #include "templates.h"
 
 static void rend_file(const char* buf, const char* name) {

@@ -4,7 +4,7 @@
 #ifndef _CMDLINE_H_
 #define _CMDLINE_H_
 
-#include "strgs.h"
+#include "string_buffer.h"
 
 typedef enum {
     // place holder

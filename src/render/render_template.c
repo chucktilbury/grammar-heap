@@ -13,6 +13,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "alloc.h"
+#include "errors.h"
 #include "render_template.h"
 
 static int get_char(const char* buffer, int* mark) {

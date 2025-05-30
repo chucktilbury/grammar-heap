@@ -11,9 +11,9 @@
 
 #include "nterm_list.h"
 #include "alloc.h"
-#include "ptr_list.h"
-#include "strg_list.h"
-#include "nterm_rules.h"
+#include "pointer_list.h"
+#include "string_list.h"
+//#include "nterm_rules.h"
 
 nterm_list_t* create_nterm_list(void) {
 
@@ -28,23 +28,23 @@ void destroy_nterm_list(nterm_list_t* lst) {
         while(NULL != (item = iterate_nterm_list(lst, &mark)))
             destroy_nterm_item(item);
 
-        destroy_ptr_list((ptr_list_t*)lst);
+        destroy_ptr_list((pointer_list_t*)lst);
     }
 }
 
 void append_nterm_list(nterm_list_t* lst, nterm_item_t* item) {
 
-    append_ptr_list((ptr_list_t*)lst, (void*)item);
+    append_ptr_list((pointer_list_t*)lst, (void*)item);
 }
 
 nterm_item_t* iterate_nterm_list(nterm_list_t* lst, int* mark) {
 
-    return (nterm_item_t*)iterate_ptr_list((ptr_list_t*)lst, mark);
+    return (nterm_item_t*)iterate_ptr_list((pointer_list_t*)lst, mark);
 }
 
 nterm_item_t* index_nterm_list(nterm_list_t* lst, int idx) {
 
-    return (nterm_item_t*)index_ptr_list((ptr_list_t*)lst, idx);
+    return (nterm_item_t*)index_ptr_list((pointer_list_t*)lst, idx);
 }
 
 nterm_item_t* create_nterm_item(string_t* nterm, string_t* type, ast_node_t* node) {
@@ -77,7 +77,7 @@ static int comp_nterm(void* p1, void* p2) {
 
 void sort_nterm_list(nterm_list_t* lst) {
 
-    sort_ptr_list((ptr_list_t*)lst, comp_nterm);
+    sort_ptr_list((pointer_list_t*)lst, comp_nterm);
 }
 
 // using the nterm or the type creates the same result
@@ -87,7 +87,7 @@ nterm_item_t* find_nterm(nterm_list_t* lst, const char* str) {
     nterm_item_t* item = create_nterm_item(ptr, ptr, NULL);
 
     nterm_item_t* retv = NULL;
-    int val = find_ptr_list((ptr_list_t*)lst, item, comp_nterm);
+    int val = find_ptr_list((pointer_list_t*)lst, item, comp_nterm);
     if(val >= 0)
         retv = lst->buffer[val];
 

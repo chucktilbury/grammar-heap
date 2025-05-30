@@ -11,10 +11,10 @@
 #ifndef _STRG_LIST_H_
 #define _STRG_LIST_H_
 
-#include "strgs.h"
-#include "ptr_list.h"
+#include "string_buffer.h"
+#include "pointer_list.h"
 
-typedef ptr_list_t string_list_t;
+typedef pointer_list_t string_list_t;
 
 string_list_t* create_string_list(void);
 void destroy_string_list(string_list_t* lst);

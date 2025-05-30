@@ -2,7 +2,7 @@
 #define _RENDER_TEMPLATE_H_
 
 #include <stdio.h>
-#include "common.h"
+#include "hash.h"
 
 typedef struct {
     const char* name;

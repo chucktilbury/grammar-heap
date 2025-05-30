@@ -7,9 +7,9 @@ add_library(${PROJECT_NAME} STATIC
     alloc.c
     fileio.c
     hash.c
-    ptr_list.c
-    strg_list.c
-    strgs.c
+    pointer_list.c
+    string_list.c
+    string_buffer.c
     trace.c
     cmdline.c
 )

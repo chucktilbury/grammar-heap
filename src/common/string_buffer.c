@@ -13,7 +13,7 @@
 #include <ctype.h>
 
 #include "alloc.h"
-#include "strgs.h"
+#include "string_buffer.h"
 
 string_t* create_string(const char* str) {
 

@@ -11,6 +11,8 @@
 #ifndef _AST_H_
 #define _AST_H_
 
+#include "string_list.h"
+#include "pointer_list.h"
 #include "tokens.h"
 
 typedef enum {
@@ -31,7 +33,7 @@ typedef struct
     ast_type_t type;
 } ast_node_t;
 
-typedef ptr_list_t ast_node_list_t;
+typedef pointer_list_t ast_node_list_t;
 
 /*
 grammar

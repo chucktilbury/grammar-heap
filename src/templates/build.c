@@ -15,7 +15,7 @@
 #include <errno.h>
 #include <limits.h>
 
-#include "common.h"
+#include "errors.h"
 
 #define HEADER "templates.h"
 #define SOURCE "templates.c"

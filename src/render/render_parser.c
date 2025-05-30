@@ -8,18 +8,13 @@
  * @date 2025-04-01
  * @copyright Copyright (c) 2025
  */
-#include "common.h"
 #include "ast.h"
 #include "parser.h"
 #include "lists.h"
-
-// #include "common.h"
-#include "ptr_list.h"
-#include "render_init.h"
+#include "errors.h"
 #include "render_parser.h"
-#include "strg_list.h"
-#include "strgs.h"
-#include "templates.h"
+#include "string_list.h"
+#include "string_buffer.h"
 
 static void render_rules(FILE* fp, string_list_t* lst) {
 

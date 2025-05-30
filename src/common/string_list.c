@@ -10,9 +10,9 @@
  */
 #include <string.h>
 
-#include "strg_list.h"
-#include "ptr_list.h"
-#include "strgs.h"
+#include "string_list.h"
+#include "pointer_list.h"
+#include "string_buffer.h"
 
 string_list_t* create_string_list(void) {
 
@@ -33,22 +33,22 @@ void destroy_string_list(string_list_t* lst) {
 
 void append_string_list(string_list_t* lst, string_t* str) {
 
-    append_ptr_list((ptr_list_t*)lst, (void*)str);
+    append_ptr_list((pointer_list_t*)lst, (void*)str);
 }
 
 string_t* index_string_list(string_list_t* lst, int index) {
 
-    return (string_t*)index_ptr_list((ptr_list_t*)lst, index);
+    return (string_t*)index_ptr_list((pointer_list_t*)lst, index);
 }
 
 string_t* iterate_string_list(string_list_t* lst, int* post) {
 
-    return (string_t*)iterate_ptr_list((ptr_list_t*)lst, post);
+    return (string_t*)iterate_ptr_list((pointer_list_t*)lst, post);
 }
 
 int len_string_list(string_list_t* lst) {
 
-    return len_ptr_list((ptr_list_t*)lst);
+    return len_ptr_list((pointer_list_t*)lst);
 }
 
 static int comp_func(void* p1, void* p2) {
@@ -58,12 +58,12 @@ static int comp_func(void* p1, void* p2) {
 
 void sort_string_list(string_list_t* lst) {
 
-    sort_ptr_list((ptr_list_t*)lst, comp_func);
+    sort_ptr_list((pointer_list_t*)lst, comp_func);
 }
 
 int find_string_list(string_list_t* lst, string_t* key) {
 
-    return find_ptr_list((ptr_list_t*)lst, (void*)key, comp_func);
+    return find_ptr_list((pointer_list_t*)lst, (void*)key, comp_func);
 }
 
 

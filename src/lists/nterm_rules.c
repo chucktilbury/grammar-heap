@@ -4,13 +4,11 @@
  * This traverses the AST to create the guts of a parser function.
  *
  */
-#include "common.h"
 #include "ast.h"
-#include "parser.h"
 
-#include "ptr_list.h"
-#include "strg_list.h"
-#include "strgs.h"
+#include "string_list.h"
+#include "string_buffer.h"
+#include "errors.h"
 #include "lists.h"
 #include "nterm_rules.h"
 

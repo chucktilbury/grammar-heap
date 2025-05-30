@@ -12,10 +12,10 @@
 #ifndef _TERM_LIST_H_
 #define _TERM_LIST_H_
 
-#include "common.h"
-#include "strgs.h"
+#include "string_buffer.h"
+#include "pointer_list.h"
 
-typedef ptr_list_t term_list_t;
+typedef pointer_list_t term_list_t;
 
 typedef struct {
     string_t* term;
