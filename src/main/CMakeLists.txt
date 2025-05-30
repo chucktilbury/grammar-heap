@@ -1,4 +1,4 @@
-project(heap)
+project(gh)
 
 include(${PROJECT_SOURCE_DIR}/../../CMakeBuildOpts.txt)
 

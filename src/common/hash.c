@@ -1,4 +1,3 @@
-
 /*
  *
  *  https://programming.guide/hash-tables-open-addressing.html
