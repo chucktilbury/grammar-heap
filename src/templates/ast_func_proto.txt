@@ -1,0 +1,1 @@
+void traverse_{{ast_nterm_name}}(ast_{{ast_nterm_name}}_t* node);

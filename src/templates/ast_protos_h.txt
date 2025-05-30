@@ -1,0 +1,9 @@
+{{file_header}}
+#ifndef _AST_PROTOS_H_
+#define _AST_PROTOS_H_
+
+#include "ast.h"
+
+{{ast_function_protos}}
+
+#endif /* _AST_PROTOS_H_ */

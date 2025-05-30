@@ -1,0 +1,27 @@
+{{file_header}}
+#ifndef _AST_H_
+#define _AST_H_
+
+#include "tokens.h"
+
+typedef enum {
+{{ast_type_list}}
+} ast_type_t;
+
+typedef struct _ast_node_t_ {
+    ast_type_t type;
+    const char* fname;
+    int line_no;
+    int col_no;
+} ast_node_t;
+
+{{ast_data_structures}}
+/*
+ * public interface declarations.
+ */
+ast_node_t* create_ast_node(ast_type_t type);
+void traverse_ast(ast_node_t* node);
+const char* node_type_to_str(ast_type_t type);
+size_t get_node_size(ast_type_t type);
+
+#endif /* _AST_H_ */
