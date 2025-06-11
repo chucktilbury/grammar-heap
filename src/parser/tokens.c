@@ -36,5 +36,6 @@ const char* tok_to_str(int type) {
             (type == TERMINAL_SYMBOL)  ? "TERMINAL_SYMBOL" :
             (type == TERMINAL_KEYWORD) ? "TERMINAL_KEYWORD" :
             (type == TERMINAL_OPER)    ? "TERMINAL_OPER" :
+            (type == CODE_BLOCK)    ? "CODE_BLOCK" :
                                          "UNKNOWN";
 }

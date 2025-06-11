@@ -104,17 +104,6 @@ func_body (
     '{' ( func_body_item | func_body )+ '}'
 )
 
-func_body_item (
-    data_decl |
-    data_def |
-    func_ref |
-    assignment |
-    while_statement |
-    do_statement |
-    if_statement |
-    inline_statement |
-    return_statement
-)
 
 func_ref (
     IDENTIFIER '(' ( expression ( ',' expression )* )? ')'
@@ -163,7 +152,29 @@ inline_statement (
 )
 
 return_statement (
-    'return' ( '(' expression? ')' )?
+    ('return' ( '(' expression? {} ')' )?{}) {// this is { some} code, too}
 )
 
+%pretext {
+    // this is some pretext code
+}
+
+%precode {
+typedef struct {
+    int foo bar;
+    int baz_haza;
+} blart:
+}
+
+func_body_item (
+    data_decl |
+    data_def |
+    func_ref |
+    assignment |
+    while_statement |
+    do_statement |
+    if_statement |
+    inline_statement { // is this acceptable? } |
+    return_statement
+)
 

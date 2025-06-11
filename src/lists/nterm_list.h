@@ -17,18 +17,10 @@
 
 typedef pointer_list_t nterm_list_t;
 
-// data structure for ds_names
-typedef struct {
-    string_t* name;
-    int type; // defined in parser.y as a token
-} nterm_ds_type_t;
-
 typedef struct {
     string_t* nterm;
     string_t* type;
     ast_node_t* node;
-    pointer_list_t* ds_names;
-    // ptr_list_t* rule_states;
     string_list_t* rule_comment;
 } nterm_item_t;
 

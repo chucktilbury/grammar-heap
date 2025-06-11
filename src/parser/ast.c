@@ -32,6 +32,8 @@ static void zero_or_more_function(zero_or_more_function_t* node);
 static void zero_or_one_function(zero_or_one_function_t* node);
 static void one_or_more_function(one_or_more_function_t* node);
 static void grouping_function(grouping_function_t* node);
+static void directive(directive_t* node);
+static void inline_code(inline_code_t* node);
 
 /*
  grammar
@@ -76,12 +78,26 @@ static void grammar_rule(grammar_rule_t* node) {
 
     ENTER;
 
-    TRACE_TOKEN(node->NON_TERMINAL);
-    grouping_function(node->grouping_function);
+    if(node->NON_TERMINAL != NULL) {
+        TRACE_TOKEN(node->NON_TERMINAL);
+        grouping_function(node->grouping_function);
+    }
+    else
+        directive(node->directive);
 
     RETURN();
 }
 
+static void directive(directive_t* node) {
+
+    ENTER;
+
+    // type is an int and code is a token
+    TRACE("type: %s", token_to_str(node->type));
+    TRACE("code: \n%s\n", raw_string(node->code->str));
+
+    RETURN();
+}
 
 /*
 rule_element_list
@@ -151,6 +167,10 @@ static void rule_element(rule_element_t* node) {
             case AST_GROUPING_FUNCTION:
                 grouping_function((grouping_function_t*)node->nterm);
                 break;
+            case AST_INLINE_CODE:
+                inline_code((inline_code_t*)node->nterm);
+                break;
+
             default:
                 FATAL("unknown non-terminal type: %s", nterm_to_str(node->nterm->type));
         }
@@ -233,6 +253,12 @@ static void grouping_function(grouping_function_t* node) {
     RETURN();
 }
 
+static void inline_code(inline_code_t* node) {
+
+    //grouping_function(node->group);
+    TRACE_TOKEN(node->code);
+}
+
 #include "alloc.h"
 
 static size_t get_node_size(ast_type_t type) {
@@ -247,7 +273,9 @@ static size_t get_node_size(ast_type_t type) {
             (type == AST_ZERO_OR_ONE_FUNCTION)  ? sizeof(zero_or_one_function_t) :
             (type == AST_ONE_OR_MORE_FUNCTION)  ? sizeof(one_or_more_function_t) :
             (type == AST_GROUPING_FUNCTION)     ? sizeof(grouping_function_t) :
-                                                  (size_t)-1;
+            (type == AST_DIRECTIVE)     ? sizeof(directive_t) :
+            (type == AST_INLINE_CODE)     ? sizeof(inline_code_t) :
+            (size_t)-1;
 }
 
 ast_node_t* create_ast_node(ast_type_t type) {
@@ -258,9 +286,10 @@ ast_node_t* create_ast_node(ast_type_t type) {
     return node;
 }
 
-void traverse_ast(ast_node_t* node) {
+void traverse_ast(grammar_t* node) {
 
-    grammar((grammar_t*)node);
+    if(errors == 0)
+        grammar(node);
 }
 
 ast_node_list_t* create_ast_node_list(void) {
@@ -295,5 +324,7 @@ const char* nterm_to_str(ast_type_t type) {
             (type == AST_ZERO_OR_ONE_FUNCTION)  ? "AST_ZERO_OR_ONE_FUNCTION" :
             (type == AST_ONE_OR_MORE_FUNCTION)  ? "AST_ONE_OR_MORE_FUNCTION" :
             (type == AST_GROUPING_FUNCTION)     ? "AST_GROUPING_FUNCTION" :
-                                                  "UNKNOWN";
+            (type == AST_DIRECTIVE)     ? "AST_DIRECTIVE" :
+            (type == AST_INLINE_CODE)     ? "AST_INLINE_CODE" :
+            "UNKNOWN";
 }

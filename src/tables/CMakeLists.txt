@@ -1,4 +1,4 @@
-project(lists)
+project(tables)
 
 include(${PROJECT_SOURCE_DIR}/../../CMakeBuildOpts.txt)
 

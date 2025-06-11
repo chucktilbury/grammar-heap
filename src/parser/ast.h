@@ -26,6 +26,8 @@ typedef enum {
     AST_ZERO_OR_ONE_FUNCTION,
     AST_ONE_OR_MORE_FUNCTION,
     AST_GROUPING_FUNCTION,
+    AST_DIRECTIVE,
+    AST_INLINE_CODE,
 } ast_type_t;
 
 typedef struct
@@ -56,6 +58,12 @@ typedef struct _grammar_list_t_ {
     ast_node_list_t* list;
 } grammar_list_t;
 
+typedef struct _directive_t_ {
+    ast_node_t node;
+    int type;
+    token_t* code;
+} directive_t;
+
 /*
  grammar_rule
     : NON_TERMINAL grouping_function
@@ -65,6 +73,7 @@ typedef struct _grammar_rule_t_ {
     ast_node_t node;
     token_t* NON_TERMINAL;
     struct _grouping_function_t_* grouping_function;
+    struct _directive_t_* directive;
 } grammar_rule_t;
 
 /*
@@ -163,8 +172,14 @@ typedef struct _grouping_function_t_ {
     string_list_t* impl;
 } grouping_function_t;
 
+typedef struct _inline_code_t_ {
+    ast_node_t node;
+    struct _grouping_function_t_* group;
+    token_t* code;
+} inline_code_t;
+
 ast_node_t* create_ast_node(ast_type_t type);
-void traverse_ast(ast_node_t* node);
+void traverse_ast(grammar_t* node);
 
 ast_node_list_t* create_ast_node_list(void);
 void append_ast_node_list(ast_node_list_t* lst, ast_node_t* ptr);

@@ -2,6 +2,10 @@
 
 #include "tokens.h"
 #include "parser.h"
+#include "string_buffer.h"
+
+int depth;
+string_t* strbuf = NULL;
 
 %}
 
@@ -13,7 +17,13 @@
     //%option header-file="scanner.h"
     //%option outfile="scanner.c"
 
+%x CODEBLOCK
+
 %%
+
+"%pretext"  { return PRETEXT; }
+"%precode"  { return PRECODE; }
+"%postcode"  { return POSTCODE; }
 
 "+" { return PLUS; }
 "*" { return STAR; }
@@ -21,6 +31,41 @@
 "|" { return PIPE; }
 "(" { return OPAREN; }
 ")" { return CPAREN; }
+
+"{" {
+    depth = 0;
+    if(strbuf == NULL)
+        strbuf = create_string(NULL);
+    else
+        clear_string(strbuf);
+    BEGIN(CODEBLOCK);
+}
+
+<CODEBLOCK>"{" {
+    depth++;
+    append_string_char(strbuf, '{');
+}
+
+<CODEBLOCK>[^{}\n] {
+    append_string(strbuf, yytext);
+}
+
+<CODEBLOCK>\n {
+    // so line numbers continue to work
+    append_string_char(strbuf, '\n');
+}
+
+<CODEBLOCK>"}" {
+    if(depth > 0) {
+        depth--;
+        append_string_char(strbuf, '}');
+    }
+    else {
+        BEGIN(INITIAL);
+        yylval.token = create_token(raw_string(strbuf), CODE_BLOCK);
+        return CODE_BLOCK;
+    }
+}
 
 [a-z_][a-z0-9_]* {
     yylval.token = create_token(yytext, NON_TERMINAL);

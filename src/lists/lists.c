@@ -17,10 +17,8 @@
 #include "alloc.h"
 
 #include "nterm_list.h"
-#include "nterm_ds.h"
 #include "term_list.h"
 #include "nterm_comment.h"
-#include "nterm_rules.h"
 
 // global product produced by this file
 master_list_t* master_list;
@@ -296,9 +294,7 @@ void make_raw_lists(void) {
     sort_nterm_list(master_list->nterm_list);
     sort_term_list(master_list->term_list);
 
-    init_rule_states();
     add_comments();
-    find_ds();
 }
 
 master_list_t* create_master_list(void) {

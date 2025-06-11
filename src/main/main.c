@@ -4,10 +4,12 @@
 #include <string.h>
 #include <errno.h>
 
+#include "ast.h"
 #include "scanner.h"
 #include "parser.h"
 //#include "ast.h"
 #include "cmdline.h"
+#include "lists.h"
 
 void cmdline(int argc, char** argv) {
 
@@ -31,6 +33,9 @@ int main(int argc, char** argv) {
     }
 
     yyparse();
+
+    //make_raw_lists();
+    traverse_ast(root_node);
 
     return 0;
 }

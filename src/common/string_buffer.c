@@ -100,6 +100,7 @@ string_t* append_string_char(string_t* buf, int ch) {
 
     buf->buffer[buf->len] = (char)ch;
     buf->len++;
+    buf->buffer[buf->len] = '\0';
 
     return buf;
 }

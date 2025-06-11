@@ -53,7 +53,6 @@ nterm_item_t* create_nterm_item(string_t* nterm, string_t* type, ast_node_t* nod
     ptr->nterm = nterm;
     ptr->type = type;
     ptr->node = node;
-    ptr->ds_names = create_ptr_list();
     ptr->rule_comment = create_string_list();
 
     return ptr;
@@ -96,11 +95,3 @@ nterm_item_t* find_nterm(nterm_list_t* lst, const char* str) {
     return retv;
 }
 
-void create_ds_name(nterm_item_t* item, string_t* name, int type) {
-
-    nterm_ds_type_t* ptr = _ALLOC_TYPE(nterm_ds_type_t);
-    ptr->name = name;
-    ptr->type = type;
-
-    append_ptr_list(item->ds_names, (void*)ptr);
-}
