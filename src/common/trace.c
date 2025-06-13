@@ -54,6 +54,11 @@ void decrement_trace_depth(void) {
         trace_depth --;
 }
 
+void reset_trace_depth(int val) {
+
+    trace_depth = val;
+}
+
 int get_trace_depth(void) {
 
     return trace_depth;
@@ -94,6 +99,7 @@ void print_trace(const char* fmt, ...) {
     va_start(args, fmt);
     vfprintf(trace_file_handle, fmt, args);
     va_end(args);
+    fprintf(trace_file_handle, "\n");
 }
 
 void print_enter(const char* file, int line, const char* func) {

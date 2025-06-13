@@ -287,9 +287,13 @@ ast_node_t* create_ast_node(ast_type_t type) {
 void traverse_ast(grammar_t* node) {
 
     LOCAL_VERBOSITY(9);
+    HEADER;
+    ENTER;
 
     if(errors == 0)
         grammar(node);
+
+    RETURN();
 }
 
 ast_node_list_t* create_ast_node_list(void) {

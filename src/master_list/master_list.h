@@ -20,14 +20,16 @@ typedef struct {
     nterm_item_t* crnt_nterm;
     nterm_list_t* nterm_list;
     term_list_t* term_list;
-    string_t* current_file;
-    string_t* project_name;
+    string_t* pre_text;
+    string_t* pre_code;
+    string_t* post_code;
 } master_list_t;
 
 extern master_list_t* master_list;
 
 master_list_t* create_master_list(void);
 void destroy_master_list(master_list_t* lst);
+void dump_master_list(void);
 void make_raw_lists(void);
 
 #endif /* _LISTS_H_ */

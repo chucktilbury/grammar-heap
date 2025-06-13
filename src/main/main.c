@@ -9,8 +9,10 @@
 #include "parser.h"
 //#include "ast.h"
 #include "cmdline.h"
-#include "lists.h"
+#include "master_list.h"
 #include "trace.h"
+
+#include "table_pass1.h"
 
 void cmdline(int argc, char** argv, char** env) {
 
@@ -38,8 +40,12 @@ int main(int argc, char** argv, char** env) {
 
     yyparse();
 
-    //make_raw_lists();
-    traverse_ast(root_node);
+    make_raw_lists();
+    //traverse_ast(root_node);
+
+    create_table_pass1();
+
+    dump_master_list();
 
     return 0;
 }

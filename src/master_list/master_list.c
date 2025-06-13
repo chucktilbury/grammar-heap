@@ -12,13 +12,14 @@
 
 #include "ast.h"
 #include "errors.h"
-#include "lists.h"
+#include "master_list.h"
 #include "parser.h"
 #include "alloc.h"
 
 #include "nterm_list.h"
+#include "string_buffer.h"
 #include "term_list.h"
-#include "nterm_comment.h"
+//#include "nterm_comment.h"
 
 // global product produced by this file
 master_list_t* master_list;
@@ -42,6 +43,8 @@ static void zero_or_more_function(zero_or_more_function_t* node);
 static void zero_or_one_function(zero_or_one_function_t* node);
 static void one_or_more_function(one_or_more_function_t* node);
 static void grouping_function(grouping_function_t* node);
+static void inline_code(inline_code_t* node);
+static void directive(directive_t* node);
 
 /*
  grammar
@@ -76,6 +79,37 @@ static void grammar_list(grammar_list_t* node) {
     RETURN();
 }
 
+static void directive(directive_t* node) {
+
+    ENTER;
+
+    // type is an int and code is a token
+    TRACE("type: %s", token_to_str(node->type));
+
+    switch(node->type) {
+        case PRETEXT:
+            append_string_fmt(master_list->pre_text, "\n// %d pre-text directive seen.\n", node->code->line_no);
+            append_string_str(master_list->pre_text, node->code->str);
+            break;
+
+        case PRECODE:
+            append_string_fmt(master_list->pre_code, "\n// %d pre-code directive seen.\n", node->code->line_no);
+            append_string_str(master_list->pre_code, node->code->str);
+            break;
+
+        case POSTCODE:
+            append_string_fmt(master_list->post_code, "\n// %d post-code directive seen.\n", node->code->line_no);
+            append_string_str(master_list->post_code, node->code->str);
+            break;
+
+        default:
+            FATAL("invalid directive type: %d", node->type);
+    }
+
+    TRACE("code: \n%s\n", raw_string(node->code->str));
+
+    RETURN();
+}
 
 /*
 non_terminal_rule
@@ -86,12 +120,19 @@ static void grammar_rule(grammar_rule_t* node) {
 
     ENTER;
 
-    TRACE_TOKEN(node->NON_TERMINAL);
+    if(node->NON_TERMINAL != NULL) {
+        TRACE_TOKEN(node->NON_TERMINAL);
 
-    string_t* type = create_string_fmt("AST_%s", node->NON_TERMINAL->str->buffer);
-    upcase(type);
-    append_nterm_list(master_list->nterm_list, create_nterm_item(node->NON_TERMINAL->str, type, (ast_node_t*)node->grouping_function));
-    grouping_function(node->grouping_function);
+        string_t* type = create_string_fmt("AST_%s", node->NON_TERMINAL->str->buffer);
+        upcase(type);
+
+        nterm_item_t* item = create_nterm_item(node->NON_TERMINAL->str, type, (ast_node_t*)node->grouping_function);
+        append_nterm_list(master_list->nterm_list, item);
+
+        grouping_function(node->grouping_function);
+    }
+    else
+        directive(node->directive);
 
     RETURN();
 }
@@ -139,37 +180,22 @@ static void rule_element(rule_element_t* node) {
         TRACE_TOKEN(node->token);
 
         switch(node->token->type) {
-            case TERMINAL_KEYWORD: {
-                string_t* term = copy_string(node->token->str);
-                // strip_quotes(term);
+            case TERMINAL_KEYWORD:
+                append_term_list(master_list->term_list, create_term_item(node->token, 1));
+                break;
 
-                string_t* tok = copy_string(term);
-                upcase(tok);
-                // create_string copies the string
-                // the string term is simply assigned.
-                append_term_list(master_list->term_list, create_term_item(term, create_string_fmt("TOK_%s", tok->buffer), 1));
-                destroy_string(tok);
-            } break;
-            case TERMINAL_OPER: {
-                string_t* term = copy_string(node->token->str);
-                // strip_quotes(term);
+            case TERMINAL_OPER:
+                append_term_list(master_list->term_list, create_term_item(node->token, 1));
+                break;
 
-                string_t* tok = copy_string(term);
-                tok = convert(tok);
+            case TERMINAL_SYMBOL:
+                append_term_list(master_list->term_list, create_term_item(node->token, 0));
+                break;
 
-                append_term_list(master_list->term_list, create_term_item(term, create_string_fmt("TOK_%s", tok->buffer), 1));
-
-                destroy_string(tok); // normally GC would handle this.
-            } break;
-            case TERMINAL_SYMBOL: {
-                string_t* term = copy_string(node->token->str);
-                string_t* tok = create_string_fmt("TOK_%s", node->token->str->buffer);
-
-                append_term_list(master_list->term_list, create_term_item(term, tok, 0));
-            } break;
             case NON_TERMINAL:
                 /* do nothing */
                 break;
+
             default:
                 FATAL("invalid token type: %s", tok_to_str(node->token->type));
         }
@@ -180,18 +206,27 @@ static void rule_element(rule_element_t* node) {
             case AST_OR_FUNCTION:
                 or_function((or_function_t*)node->nterm);
                 break;
+
             case AST_ZERO_OR_MORE_FUNCTION:
                 zero_or_more_function((zero_or_more_function_t*)node->nterm);
                 break;
+
             case AST_ZERO_OR_ONE_FUNCTION:
                 zero_or_one_function((zero_or_one_function_t*)node->nterm);
                 break;
+
             case AST_ONE_OR_MORE_FUNCTION:
                 one_or_more_function((one_or_more_function_t*)node->nterm);
                 break;
+
             case AST_GROUPING_FUNCTION:
                 grouping_function((grouping_function_t*)node->nterm);
                 break;
+
+            case AST_INLINE_CODE:
+                inline_code((inline_code_t*)node->nterm);
+                break;
+
             default:
                 FATAL("unknown node type: %d", node->nterm->type);
         }
@@ -274,9 +309,24 @@ static void grouping_function(grouping_function_t* node) {
     RETURN();
 }
 
+static void inline_code(inline_code_t* node) {
+
+    ENTER;
+
+    //grouping_function(node->group);
+    TRACE_TOKEN(node->code);
+
+    RETURN();
+}
+
+
 static void raw_list(void) {
 
+    ENTER;
+
     grammar(root_node);
+
+    RETURN();
 }
 
 /**
@@ -286,6 +336,10 @@ static void raw_list(void) {
  */
 void make_raw_lists(void) {
 
+    LOCAL_VERBOSITY(19);
+    HEADER;
+    ENTER;
+
     master_list = create_master_list();
 
     raw_list();
@@ -294,28 +348,81 @@ void make_raw_lists(void) {
     sort_nterm_list(master_list->nterm_list);
     sort_term_list(master_list->term_list);
 
-    add_comments();
+    RETURN();
 }
 
 master_list_t* create_master_list(void) {
 
+    ENTER;
     master_list_t* ptr = _ALLOC_TYPE(master_list_t);
 
     ptr->first_nterm = NULL;
-    ptr->current_file = NULL;
     ptr->nterm_list = create_nterm_list();
     ptr->term_list = create_term_list();
+    ptr->pre_text = create_string(NULL);
+    ptr->pre_code = create_string(NULL);
+    ptr->post_code = create_string(NULL);
 
-    return ptr;
+    RETURN(ptr);
 }
 
 void destroy_master_list(master_list_t* lst) {
 
+    ENTER;
     if(lst != NULL) {
-        destroy_nterm_item(lst->first_nterm);
         destroy_nterm_list(lst->nterm_list);
         destroy_term_list(lst->term_list);
-        destroy_string(lst->current_file);
+        destroy_string(lst->pre_text);
+        destroy_string(lst->pre_code);
+        destroy_string(lst->post_code);
         _FREE(lst);
     }
+    RETURN();
+}
+
+void dump_master_list(void) {
+
+    LOCAL_VERBOSITY(1);
+    HEADER;
+
+    PRINT("");
+    SEPARATOR;
+    PRINT("PRE-TEXT:");
+    emit_string(get_trace_handle(), master_list->pre_text);
+
+    PRINT("");
+    SEPARATOR;
+    PRINT("PRE-CODE:");
+    emit_string(get_trace_handle(), master_list->pre_code);
+
+    PRINT("");
+    SEPARATOR;
+    PRINT("POST-CODE:");
+    emit_string(get_trace_handle(), master_list->post_code);
+
+    PRINT("");
+    SEPARATOR;
+    PRINT("TERMINAL LIST:");
+
+    int mark = 0;
+    term_item_t* titem;
+    while(NULL != (titem = iterate_term_list(master_list->term_list, &mark)))
+        PRINT("\t%3d. %-20s%s", mark, titem->token->ptype->buffer, titem->token->str->buffer);
+
+
+    PRINT("");
+    SEPARATOR;
+    PRINT("NON-TERMINAL NODE LIST:");
+
+    PRINT("ROOT NODE:   %-20s%-25s%p",
+          master_list->first_nterm->nterm->buffer,
+          master_list->first_nterm->type->buffer,
+          (void*)master_list->first_nterm->node);
+
+    mark = 0;
+    nterm_item_t* nitem;
+    while(NULL != (nitem = iterate_nterm_list(master_list->nterm_list, &mark)))
+        PRINT("\t%3d. %-20s%-25s%p", mark, nitem->nterm->buffer, nitem->type->buffer, (void*)nitem->node);
+
+    PRINT("");
 }

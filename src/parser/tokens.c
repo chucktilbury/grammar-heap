@@ -12,16 +12,53 @@
 #include "alloc.h"
 #include "tokens.h"
 #include "parser.h"
+#include "errors.h"
 extern int yylineno;
 
 token_t* create_token(const char* str, int type) {
 
     token_t* tok = _ALLOC_TYPE(token_t);
-    tok->type = type;
     tok->str = create_string(str);
     tok->line_no = yylineno;
+    tok->type = type;
+
+    switch(type) {
+        case TERMINAL_SYMBOL: {
+            tok->ptype = create_string_fmt("TOK_%s", str);
+        } break;
+
+        case TERMINAL_KEYWORD: {
+            string_t* tmp = create_string_fmt("TOK_%s", str);
+            strip_char(tmp, '\'');
+            upcase(tmp);
+            tok->ptype = tmp;
+        } break;
+
+        case TERMINAL_OPER: {
+            string_t* tmp = create_string_fmt("TOK_%s", str);
+            strip_char(tmp, '\'');
+            tok->ptype = convert(tmp);
+            destroy_string(tmp);
+        } break;
+
+        case CODE_BLOCK:
+        case NON_TERMINAL:
+            // do nothing
+            break;
+
+        default:
+            FATAL("unknown token type: %s", token_to_str(type));
+    }
 
     return tok;
+}
+
+void destroy_token(token_t* tok) {
+
+    if(tok != NULL) {
+        destroy_string(tok->str);
+        _FREE(tok);
+    }
 }
 
 const char* tok_to_str(int type) {

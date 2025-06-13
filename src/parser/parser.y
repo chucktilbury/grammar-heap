@@ -157,14 +157,14 @@ rule_element
     }
     | TERMINAL_KEYWORD {
         $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        strip_quotes($1->str);
+        //strip_quotes($1->str);
         $$->token = $1;
         func_allowed = 1;
         code_allowed = 1;
     }
     | TERMINAL_OPER {
         $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        strip_quotes($1->str);
+        //strip_quotes($1->str);
         $$->token = $1;
         func_allowed = 1;
         code_allowed = 1;

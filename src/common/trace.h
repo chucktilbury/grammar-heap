@@ -19,10 +19,11 @@
 extern int trace_depth;
 static int local_verbosity = 0;
 
-#define PRINT(v, ...) \
+#define PRINT(...) \
     do { \
-        if((v) < local_verbosity) { \
+        if(local_verbosity < peek_trace_verbosity()) { \
             print_indent(__VA_ARGS__); \
+            fputc('\n', get_trace_handle()); \
         } \
     } while(0)
 
@@ -51,8 +52,18 @@ static int local_verbosity = 0;
 #define SEPARATOR \
     do { \
         if(local_verbosity < peek_trace_verbosity()) { \
-            fprintf(get_trace_handle(), "%*s\n", 80, "-");\
+            for(int i = 0; i < 80; i++) \
+                fputc('-', get_trace_handle()); \
+            fputc('\n', get_trace_handle()); \
         } \
+    } while(0)
+
+#define HEADER \
+    do { \
+        reset_trace_depth(0); \
+        SEPARATOR; \
+        PRINT("\t%s", __func__); \
+        SEPARATOR; \
     } while(0)
 
 #define INIT_TRACE(fh) init_trace(fh)
@@ -62,6 +73,7 @@ static int local_verbosity = 0;
 #define LOCAL_VERBOSITY(n) local_verbosity = (n)
 
 void init_trace(FILE* fp);
+void reset_trace_depth(int val);
 void push_trace_verbosity(int num);
 void pop_trace_verbosity(void);
 int peek_trace_verbosity(void);
@@ -87,6 +99,7 @@ void print_return(const char* file, int line, const char* func, const char* str)
 #define PRINT_INDENT(...)
 #define PRINT_TRACE(...)
 #define LOCAL_VERBOSITY(n)
+#define HEADER
 
 #endif
 

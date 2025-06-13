@@ -21,7 +21,6 @@ typedef struct {
     string_t* nterm;
     string_t* type;
     ast_node_t* node;
-    string_list_t* rule_comment;
 } nterm_item_t;
 
 nterm_list_t* create_nterm_list(void);

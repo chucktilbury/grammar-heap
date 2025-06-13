@@ -10,9 +10,9 @@ target_link_libraries(${PROJECT_NAME}
     #gc
     #cord
     parser
-    lists
-    #generate
-    #render
+    master_list
     common
-    #templates
+    table_pass1
+    table_pass2
+    table_pass3
 )

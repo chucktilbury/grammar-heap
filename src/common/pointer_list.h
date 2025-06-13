@@ -6,8 +6,8 @@
 
 typedef struct _ptr_list_t_ {
     void** buffer;
-    size_t len;
-    size_t cap;
+    int len;
+    int cap;
     bool is_sorted;
 } pointer_list_t;
 

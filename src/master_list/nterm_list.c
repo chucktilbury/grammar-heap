@@ -53,7 +53,6 @@ nterm_item_t* create_nterm_item(string_t* nterm, string_t* type, ast_node_t* nod
     ptr->nterm = nterm;
     ptr->type = type;
     ptr->node = node;
-    ptr->rule_comment = create_string_list();
 
     return ptr;
 }
@@ -63,7 +62,6 @@ void destroy_nterm_item(nterm_item_t* item) {
     if(item != NULL) {
         destroy_string(item->nterm);
         destroy_string(item->type);
-        destroy_string_list(item->rule_comment);
         _FREE(item);
     }
 }

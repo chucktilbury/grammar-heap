@@ -2,6 +2,19 @@
 #include "alloc.h"
 #include "pointer_list.h"
 
+// The index could be <0, which refers to the end of the list.
+static int normalize_index(pointer_list_t* lst, int idx) {
+
+    if(idx >= 0 && idx < lst->len)
+        return idx;
+    else if(idx < 0 && -idx < lst->len) {
+        idx = lst->len - idx;
+        return idx;
+    }
+    else
+        return -1;
+}
+
 pointer_list_t* create_ptr_list(void) {
 
     pointer_list_t* ptr = _ALLOC_TYPE(pointer_list_t);
@@ -35,8 +48,10 @@ void append_ptr_list(pointer_list_t* lst, void* ptr) {
 
 void* index_ptr_list(pointer_list_t* lst, int index) {
 
-    if(index >= 0 && (size_t)index < lst->len)
-        return lst->buffer[index];
+    int idx = normalize_index(lst, index);
+
+    if(idx >= 0)
+        return lst->buffer[idx];
     else
         return NULL;
 }
@@ -73,7 +88,7 @@ void* iterate_ptr_list(pointer_list_t* lst, int* post) {
 
     void* ptr = NULL;
 
-    if((*post >= 0) && ((size_t)*post < lst->len)) {
+    if((*post >= 0) && (*post < lst->len)) {
         ptr = lst->buffer[*post];
         *post = *post + 1;
     }
@@ -89,8 +104,8 @@ int len_ptr_list(pointer_list_t* lst) {
 // bubble sort
 void sort_ptr_list(pointer_list_t* lst, int (*comp_func)(void*, void*)) {
 
-    for(size_t step = 0; step < lst->len - 1; step++) {
-        for(size_t i = 0; i < lst->len - step - 1; i++) {
+    for(int step = 0; step < lst->len - 1; step++) {
+        for(int i = 0; i < lst->len - step - 1; i++) {
             if(comp_func(lst->buffer[i], lst->buffer[i + 1]) > 0) {
                 void* tmp = lst->buffer[i];
                 lst->buffer[i] = lst->buffer[i + 1];
@@ -135,7 +150,7 @@ pointer_list_t* copy_ptr_list(pointer_list_t* lst) {
 
     pointer_list_t* ptr = create_ptr_list();
 
-    for(size_t i = 0; i < lst->len; i++)
+    for(int i = 0; i < lst->len; i++)
         append_ptr_list(ptr, lst->buffer[i]);
 
     return ptr;
