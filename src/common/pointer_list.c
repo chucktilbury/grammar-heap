@@ -68,6 +68,9 @@ void* peek_ptr_list(pointer_list_t* lst) {
 
 void* iterate_ptr_list(pointer_list_t* lst, int* post) {
 
+    if(lst == NULL)
+        return NULL;
+
     void* ptr = NULL;
 
     if((*post >= 0) && ((size_t)*post < lst->len)) {

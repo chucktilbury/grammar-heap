@@ -100,8 +100,10 @@ static void show_cmdline_help(void) {
                 strcat(tmp, "strg] ");
             else if(ptr->type & CMD_NUM)
                 strcat(tmp, "num]  ");
-            else
+            else if(ptr->type & CMD_SWITCH)
                 strcat(tmp, "sw]   ");
+            else
+                strcat(tmp, "]     ");
             printf("%s", tmp);
 
             if(ptr->help != NULL)
@@ -125,11 +127,51 @@ static void show_cmdline_help(void) {
     printf("%s\n\n", tmp);
 }
 
-static void init_cmd(int argc, char** argv) {
+static void store_environment(char** env) {
+
+    char buffer[1024];
+
+    for(int i = 0; env[i] != NULL; i++) {
+        //printf("%s\n", env[i]);
+        cmdline_entry_t* ptr = _ALLOC_TYPE(cmdline_entry_t);
+
+        strncpy(buffer, env[i], sizeof(buffer));
+        char* head = buffer;
+        char* tmp = strchr(buffer, '=');
+        if(tmp != NULL) {
+            *tmp = '\0';
+            ptr->name = create_string(head);
+            tmp++;
+            head = tmp;
+
+            if(*head != ':') {
+                ptr->value = split_string(head, ':');
+            }
+            else {
+                // example: KONSOLE_DBUS_SERVICE=:1.615
+                ptr->value = create_string_list();
+                append_string_list(ptr->value, create_string(head));
+            }
+
+            ptr->long_opt = NULL;
+            ptr->short_opt = 0;
+            ptr->cb = NULL;
+            ptr->type = CMD_NONE;
+
+            append_ptr_list(cmdline->args, ptr);
+        }
+        else
+            continue;
+    }
+}
+
+static void init_cmd(int argc, char** argv, char** env) {
 
     cmds_idx = 0;
     max_cmds_idx = argc;
     cmds = (const char**)argv;
+
+    store_environment(env);
 }
 
 static const char* get_cmd(void) {
@@ -199,14 +241,6 @@ static cmdline_entry_t* get_opt_by_name(const char* str) {
     return ptr;
 }
 
-const char* parm_type_to_str(cmdline_type_t type) {
-
-    return ((type & CMD_STR) && !(type & (CMD_NUM | CMD_BOOL)))  ? "STR " :
-            ((type & CMD_NUM) && !(type & (CMD_STR | CMD_BOOL))) ? "NUM " :
-            ((type & CMD_BOOL) && !(type & (CMD_NUM | CMD_STR))) ? "BOOL " :
-                                                                   "";
-}
-
 /*********************************************
  * APIs used by this software.
  */
@@ -245,25 +279,47 @@ void destroy_cmdline(void) {
 /*
  * Add a parsed command line value to the value database. If the option
  * already exists and it's a list the add it to the list. If it's not a
- * list and it already exists, then flag an error.
+ * list and it already exists, then replace it.
  */
 static void add_cmdline_arg(cmdline_entry_t* item, const char* str) {
 
     // printf("adding: %s = %s\n", raw_string(item->name), str);
 
-    if((item->type & CMD_LIST) && (item->value != NULL)) {
-        append_string_list(item->value, create_string(str));
-    }
-    else if(item->value != NULL) {
-        int mark = 0;
-        string_t* s = iterate_string_list(item->value, &mark); // get the first item.
-        clear_string(s);
-        append_string(s, str);
+    if(item->type & CMD_LIST) {
+        if(item->value != NULL) {
+            string_list_t* split = split_string(str, ':');
+            append_string_list_list(item->value, split);
+            destroy_string_list(split);
+        }
+        else
+            item->value = split_string(str, ':');
     }
     else {
-        item->value = create_string_list();
-        append_string_list(item->value, create_string(str));
+        if(item->value != NULL) {
+            int mark = 0;
+            string_t* s = iterate_string_list(item->value, &mark); // get the first item.
+            clear_string(s);
+            append_string(s, str);
+        }
+        else {
+            item->value = create_string_list();
+            append_string_list(item->value, create_string(str));
+        }
     }
+    // if((item->type & CMD_LIST) && (item->value != NULL)) {
+    //     append_string_list(item->value, create_string(str));
+    // }
+    // else if(item->value != NULL) {
+    //     int mark = 0;
+    //     string_t* s = iterate_string_list(item->value, &mark); // get the first item.
+    //     clear_string(s);
+    //     append_string(s, str);
+    // }
+    // else {
+    //     item->value = split_string(str, ':');
+    //     // item->value = create_string_list();
+    //     // append_string_list(item->value, create_string(str));
+    // }
 }
 
 /*
@@ -486,9 +542,9 @@ static void parse_list_item(const char* str) {
  * Does winders also strip quotes? Are there issues with not using a slash (/)
  * to intro command options?
  */
-void parse_cmdline(int argc, char** argv) {
+void parse_cmdline(int argc, char** argv, char** env) {
 
-    init_cmd(argc, argv);
+    init_cmd(argc, argv, env);
 
     cmdline->pname = create_string(argv[0]);
     const char* ptr = consume_cmd(); // discard the first element.
@@ -547,7 +603,14 @@ string_t* get_cmd_opt(const char* name) {
     int mark = 0;
 
     if(opt != NULL)
-        return iterate_string_list(opt->value, &mark);
+        if(opt->type & CMD_SWITCH) {
+            if(opt->type & CMD_SEEN)
+                return create_string("1");
+            else
+                return create_string("0");
+        }
+        else
+            return iterate_string_list(opt->value, &mark);
     else
         return NULL;
 }
@@ -627,3 +690,51 @@ void cmdline_vers(void) {
     show_cmdline_vers();
     exit(1);
 }
+
+#ifdef TEST_COMMAND_LINE
+// build string:
+// gcc -Wall -Wextra -pedantic -Wpedantic -DUSE_TRACE -DTEST_COMMAND_LINE
+//  -g -o t cmdline.c string_buffer.c alloc.c pointer_list.c string_list.c trace.c
+
+#include "trace.h"
+
+void create_config(int argc, char** argv, char** env) {
+
+    init_cmdline("test cmd line", "FSA parser generator", "0.1");
+    add_cmdline('v', "verbosity", "verbosity", "From 0 to 10. Print more information", "0", NULL, CMD_NUM|CMD_ARGS);
+    add_cmdline('x', NULL, "exx", "just another command line arg", "0", NULL, CMD_SWITCH);
+    add_cmdline('L', NULL, "lst", "Add a list", NULL, NULL, CMD_LIST|CMD_ARGS);
+    add_cmdline('h', "help", NULL, "Print this helpful information", NULL, cmdline_help, CMD_NONE);
+    add_cmdline('V', "version", NULL, "Show the program version", NULL, cmdline_vers, CMD_NONE);
+    add_cmdline(0, NULL, NULL, NULL, NULL, NULL, CMD_DIV);
+    add_cmdline(0, NULL, "files", "File name(s) to input", NULL, NULL, CMD_REQD|CMD_ANON);
+
+    parse_cmdline(argc, argv, env);
+
+    INIT_TRACE(NULL);
+}
+
+int main(int argc, char** argv, char** env) {
+
+    create_config(argc, argv, env);
+
+    printf("fname: %s\n", raw_string(get_cmd_opt("files")));
+    printf("verbosity: %s\n", raw_string(get_cmd_opt("verbosity")));
+    printf("exx: %s\n", raw_string(get_cmd_opt("exx")));
+    printf("USER: %s\n", raw_string(get_cmd_opt("USER")));
+    printf("KONSOLE_DBUS_SERVICE: %s\n", raw_string(get_cmd_opt("KONSOLE_DBUS_SERVICE")));
+
+    string_t* str;
+    int mark = 0;
+    printf("\nlst:\n");
+    while(NULL != (str = iterate_cmd_opt("lst", &mark)))
+        printf("    %s\n", raw_string(str));
+
+    printf("\nPATH:\n");
+    while(NULL != (str = iterate_cmd_opt("PATH", &mark)))
+        printf("    %s\n", raw_string(str));
+
+    return 0;
+}
+
+#endif

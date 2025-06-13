@@ -19,13 +19,14 @@ typedef enum {
     CMD_BOOL = 0x08, // type is bool, requires "true" or "false"
     CMD_LIST = 0x10, // a list is accepted by the arg. implies CMD_ARGS.
     CMD_ANON = 0x20, // a list with no command option
+    CMD_SWITCH = 0x40, // a switch with no command option
 
     // arg attributes
-    CMD_REQD = 0x40, // item is required
-    CMD_DIV = 0x80,  // item is a divider for the help screen
+    CMD_REQD = 0x80, // item is required
+    CMD_DIV = 0x100,  // item is a divider for the help screen
 
     // internal flags, do not use
-    CMD_SEEN = 0x100,
+    CMD_SEEN = 0x200,
 } cmdline_type_t;
 
 typedef void (*cmdline_callback_t)(void);
@@ -43,7 +44,7 @@ void add_cmdline(int short_opt,
                  cmdline_type_t type);
 
 void destroy_cmdline(void);
-void parse_cmdline(int argc, char** argv);
+void parse_cmdline(int argc, char** argv, char** env);
 string_t* get_cmd_opt(const char* name);
 string_t* iterate_cmd_opt(const char* name, int* mark);
 

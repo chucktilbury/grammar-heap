@@ -48,6 +48,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wno-sign-compare
     -Wno-unused-variable
     -Wno-parentheses-equality
+    -DUSE_TRACE
     #-DUSE_GC
     $<$<CONFIG:DEBUG>:-DENABLE_AST_DUMP>
     #$<$<CONFIG:DEBUG>:-DENABLE_PARSER_TRACE>

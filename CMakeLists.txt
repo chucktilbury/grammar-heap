@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(grammar-heap)
+project(parser-generator)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF )
 

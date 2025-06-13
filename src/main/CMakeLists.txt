@@ -1,4 +1,4 @@
-project(gh)
+project(pgen)
 
 include(${PROJECT_SOURCE_DIR}/../../CMakeBuildOpts.txt)
 

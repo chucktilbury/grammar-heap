@@ -81,3 +81,44 @@ void add_string_list(string_list_t* lst, string_t* str) {
 
     append_string_list(lst, str);
 }
+
+string_list_t* split_string(const char* str, int ch) {
+
+    string_list_t* sl = create_string_list();
+    string_t* buf = create_string(str);
+    char* head = (char*)raw_string(buf);
+    char* tail = head;
+    int finished = 0;
+
+    while(!finished) {
+        tail = strchr(head, ch);
+        if(tail != NULL) {
+            *tail = '\0';
+            append_string_list(sl, create_string(head));
+            tail++;
+            head = tail;
+            if(*head == '\0')
+                finished++;
+        }
+        else {
+            append_string_list(sl, create_string(head));
+            finished++;
+        }
+    }
+
+    destroy_string(buf);
+    return sl;
+}
+
+// append the src string list to the dest string list
+// does not change src.
+void append_string_list_list(string_list_t* dest, string_list_t* src) {
+
+    string_t* item;
+    int mark = 0;
+
+    while(NULL != (item = iterate_string_list(src, &mark)))
+        append_string_list(dest, item);
+}
+
+

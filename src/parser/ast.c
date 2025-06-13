@@ -12,8 +12,6 @@
 #include "ast.h"
 #include "parser.h"
 #include "errors.h"
-
-#define USE_TRACE
 #include "trace.h"
 
 #ifdef USE_TRACE
@@ -287,6 +285,8 @@ ast_node_t* create_ast_node(ast_type_t type) {
 }
 
 void traverse_ast(grammar_t* node) {
+
+    LOCAL_VERBOSITY(9);
 
     if(errors == 0)
         grammar(node);

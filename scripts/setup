@@ -5,7 +5,7 @@
 
 # Set up the project name
 if [ -z "$_PROJECT_" ]; then
-    export _PROJECT_=grammar-heap
+    export _PROJECT_=pgen
 fi
 
 if [ -z "$1" ]; then

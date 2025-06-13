@@ -26,5 +26,7 @@ void sort_string_list(string_list_t* lst);
 int find_string_list(string_list_t* lst, string_t* key);
 
 void add_string_list(string_list_t* lst, string_t* str);
+string_list_t* split_string(const char* str, int ch);
+void append_string_list_list(string_list_t* dest, string_list_t* src);
 
 #endif /* _STRG_LIST_H_ */
