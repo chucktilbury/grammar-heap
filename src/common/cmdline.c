@@ -100,10 +100,8 @@ static void show_cmdline_help(void) {
                 strcat(tmp, "strg] ");
             else if(ptr->type & CMD_NUM)
                 strcat(tmp, "num]  ");
-            else if(ptr->type & CMD_SWITCH)
-                strcat(tmp, "sw]   ");
             else
-                strcat(tmp, "]     ");
+                strcat(tmp, "sw]   ");
             printf("%s", tmp);
 
             if(ptr->help != NULL)
