@@ -1,7 +1,3 @@
 add_subdirectory(common)
 add_subdirectory(parser)
-add_subdirectory(master_list)
-add_subdirectory(table_pass1)
-add_subdirectory(table_pass2)
-add_subdirectory(table_pass3)
 add_subdirectory(main)
