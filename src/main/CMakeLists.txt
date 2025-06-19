@@ -10,9 +10,5 @@ target_link_libraries(${PROJECT_NAME}
     #gc
     #cord
     parser
-    master_list
     common
-    table_pass1
-    table_pass2
-    table_pass3
 )

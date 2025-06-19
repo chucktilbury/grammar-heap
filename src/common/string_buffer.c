@@ -133,7 +133,10 @@ int comp_string_str(string_t* buf1, const char* buf2) {
 
 const char* raw_string(string_t* str) {
 
-    return str->buffer;
+    if(str != NULL)
+        return str->buffer;
+    else
+        return NULL;
 }
 
 string_t* strip_char(string_t* buf, int ch) {

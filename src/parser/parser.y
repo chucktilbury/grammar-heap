@@ -1,15 +1,20 @@
 %{
 #include <stdio.h>
-#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 #include "tokens.h"
 #include "ast.h"
+#include "trace.h"
+#include "cmdline.h"
 
 int yylex(void);
 void yyerror(const char*);
 extern int yylineno;
-grammar_t* root_node;
+ast_grammar_t* root_node;
 int errors = 0;
+extern FILE *yyin, *yyout;
 
 // This exists because having some functions appearing after a code block
 // does not make sense and it should be a syntax error. Rather than
@@ -21,8 +26,6 @@ int code_allowed = 0;
 
 // support the typedefs in the %union.
 %code requires {
-#include <stdint.h>
-#include <stdbool.h>
 #include "ast.h"
 #include "tokens.h"
 #include "pointer_list.h"
@@ -31,43 +34,37 @@ int code_allowed = 0;
 // this goes at the bottom of the generated header file.
 %code provides {
 const char* token_to_str(int);
-extern grammar_t* root_node;
+extern ast_grammar_t* root_node;
+void init_parser(void);
 extern int errors;
 }
 
 %union {
     token_t* token;
-    grammar_t* grammar;
-    grammar_list_t* grammar_list;
-    grammar_rule_t* grammar_rule;
-    rule_element_list_t* rule_element_list;
-    rule_element_t* rule_element;
-    or_function_t* or_function;
-    zero_or_more_function_t* zero_or_more_function;
-    zero_or_one_function_t* zero_or_one_function;
-    one_or_more_function_t* one_or_more_function;
-    grouping_function_t* grouping_function;
-    directive_t* directive;
-    inline_code_t* inline_code;
+    ast_grammar_t* grammar;
+    ast_grammar_item_t* grammar_item;
+    ast_directive_t* directive;
+    ast_alternative_list_t* alternative_list;
+    ast_rule_t* rule;
+    ast_alternative_t* alternative;
+    ast_rule_element_list_t* rule_element_list;
+    ast_rule_element_t* rule_element;
+    ast_list_clause_t* list_clause;
 };
 
-%token PLUS STAR QUESTION PIPE OPAREN CPAREN
-%token OCBRACE CCBRACE PRETEXT PRECODE POSTCODE
+%token<token> PRETEXT PRECODE POSTCODE ERROR LIST HEADERCODE
 %token<token> TERMINAL_SYMBOL TERMINAL_KEYWORD TERMINAL_OPER
 %token<token> CODE_BLOCK NON_TERMINAL
 
-%type <grammar> grammar
-%type <grammar_list> grammar_list
-%type <grammar_rule> grammar_rule
-%type <rule_element_list> rule_element_list
-%type <rule_element> rule_element
-%type <or_function> or_function
-%type <zero_or_more_function> zero_or_more_function
-%type <zero_or_one_function> zero_or_one_function
-%type <one_or_more_function> one_or_more_function
-%type <grouping_function> grouping_function
-%type <directive> directive
-%type <inline_code> inline_code
+%type<grammar> grammar
+%type<grammar_item> grammar_item
+%type<directive> directive
+%type<alternative_list> alternative_list
+%type<rule> rule
+%type<alternative> alternative
+%type<rule_element_list> rule_element_list
+%type<rule_element> rule_element
+%type<list_clause> list_clause
 
 %define parse.lac full
 %define parse.error detailed
@@ -82,194 +79,148 @@ extern int errors;
 %%
 
 grammar
-    : grammar_list {
-        root_node = $$ = (grammar_t*)create_ast_node(AST_GRAMMAR);
-        $$->grammar_list = $1;
-    }
+    : grammar_item  {
+            TRACE("create the grammar");
+            root_node = $$ = (ast_grammar_t*)create_ast_node("grammar", NTERM_GRAMMAR);
+            $$->list = create_ptr_list();
+            append_ptr_list($$->list, $1);
+        }
+    | grammar grammar_item {
+            TRACE("add grammar rule");
+            append_ptr_list($1->list, $2);
+        }
     ;
 
-grammar_list
-    : grammar_rule  {
-        $$ = (grammar_list_t*)create_ast_node(AST_GRAMMAR_LIST);
-        $$->list = create_ast_node_list();
-        append_ast_node_list($$->list, (ast_node_t*)$1);
-    }
-    | grammar_list grammar_rule {
-        append_ast_node_list($$->list, (ast_node_t*)$2);
-    }
+grammar_item
+    : rule {
+            TRACE("rule grammar item");
+            $$ = (ast_grammar_item_t*)create_ast_node("grammar_item", NTERM_GRAMMAR_ITEM);
+            $$->node = (ast_node_t*)$1;
+        }
+    | directive {
+            TRACE("directive grammar item");
+            $$ = (ast_grammar_item_t*)create_ast_node("grammar_item", NTERM_GRAMMAR_ITEM);
+            $$->node = (ast_node_t*)$1;
+        }
     ;
 
 directive
     : PRETEXT CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
-        $$->type = PRETEXT;
-        $$->code = $2;
-    }
+            TRACE("PRETEXT directive");
+            $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
+            $$->dir_type = $1;
+            $$->code = $2;
+        }
     | PRECODE CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
-        $$->type = PRECODE;
-        $$->code = $2;
-    }
+            TRACE("PRECODE directive");
+            $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
+            $$->dir_type = $1;
+            $$->code = $2;
+        }
     | POSTCODE CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
-        $$->type = POSTCODE;
-        $$->code = $2;
-    }
-
+            TRACE("POSTCODE directive");
+            $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
+            $$->dir_type = $1;
+            $$->code = $2;
+        }
+    | HEADERCODE CODE_BLOCK {
+            TRACE("HEADER directive");
+            $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
+            $$->dir_type = $1;
+            $$->code = $2;
+        }
     ;
 
-grammar_rule
-    : NON_TERMINAL grouping_function {
-        $$ = (grammar_rule_t*)create_ast_node(AST_GRAMMAR_RULE);
-        $$->NON_TERMINAL = $1;
-        $$->grouping_function = $2;
-        $$->directive = NULL;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
-    | directive {
-        $$ = (grammar_rule_t*)create_ast_node(AST_GRAMMAR_RULE);
-        $$->NON_TERMINAL = NULL;
-        $$->grouping_function = NULL;
-        $$->directive = $1;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
+rule
+    : NON_TERMINAL ':' alternative_list ';' {
+            TRACE("rule without error block");
+            $$ = (ast_rule_t*)create_ast_node("rule", NTERM_RULE);
+            $$->nterm = $1;
+            $$->alt_list = $3;
+            $$->ecode = NULL;
+        }
+    | NON_TERMINAL ':' alternative_list '|' ERROR CODE_BLOCK ';' {
+            TRACE("rule with error block");
+            $$ = (ast_rule_t*)create_ast_node("rule", NTERM_RULE);
+            $$->nterm = $1;
+            $$->alt_list = $3;
+            $$->ecode = $6;
+        }
+    ;
+
+alternative_list
+    : alternative {
+            TRACE("create alternative");
+            $$ = (ast_alternative_list_t*)create_ast_node("alternative_list", NTERM_ALTERNATIVE_LIST);
+            $$->list = create_ptr_list();
+            append_ptr_list($$->list, $1);
+        }
+    | alternative_list '|' alternative {
+            TRACE("add alternative");
+            append_ptr_list($1->list, $3);
+        }
+    ;
+
+alternative
+    : rule_element_list CODE_BLOCK {
+            TRACE("rule element list");
+            $$ = (ast_alternative_t*)create_ast_node("alternative", NTERM_ALTERNATIVE);
+            $$->re_list = $1;
+            $$->code = $2;
+        }
     ;
 
 rule_element_list
     : rule_element {
-        $$ = (rule_element_list_t*)create_ast_node(AST_RULE_ELEMENT_LIST);
-        $$->list = create_ast_node_list();
-        append_ast_node_list($$->list, (ast_node_t*)$1);
-    }
+            TRACE("create rule element");
+            $$ = (ast_rule_element_list_t*)create_ast_node("rule_element_list", NTERM_RULE_ELEMENT_LIST);
+            $$->list = create_ptr_list();
+            append_ptr_list($$->list, $1);
+        }
     | rule_element_list rule_element {
-        append_ast_node_list($$->list, (ast_node_t*)$2);
-    }
+            TRACE("add rule element");
+            append_ptr_list($1->list, $2);
+        }
     ;
 
 rule_element
-    : NON_TERMINAL {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
+    : TERMINAL_SYMBOL {
+            TRACE("rule_element: TERMINAL_SYMBOL");
+            $$ = (ast_rule_element_t*)create_ast_node("rule_element", NTERM_RULE_ELEMENT);
+            $$->token = $1;
+            $$->clause = NULL;
+        }
     | TERMINAL_KEYWORD {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        //strip_quotes($1->str);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
+            TRACE("rule_element: TERMINAL_KEYWORD");
+            $$ = (ast_rule_element_t*)create_ast_node("rule_element", NTERM_RULE_ELEMENT);
+            $$->token = $1;
+            $$->clause = NULL;
+        }
     | TERMINAL_OPER {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        //strip_quotes($1->str);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
-    | TERMINAL_SYMBOL {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
-    | or_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | zero_or_more_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | zero_or_one_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | one_or_more_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | grouping_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | inline_code {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    ;
-
-zero_or_more_function
-    : rule_element STAR {
-        if(func_allowed) {
-            $$ = (zero_or_more_function_t*)create_ast_node(AST_ZERO_OR_MORE_FUNCTION);
-            $$->rule_element = $1;
-            code_allowed = 1;
+            TRACE("rule_element: TERMINAL_OPER");
+            $$ = (ast_rule_element_t*)create_ast_node("rule_element", NTERM_RULE_ELEMENT);
+            $$->token = $1;
+            $$->clause = NULL;
         }
-        else
-            yyerror("unexpected STAR");
-    }
-    ;
-
-zero_or_one_function
-    : rule_element QUESTION {
-        if(func_allowed) {
-            $$ = (zero_or_one_function_t*)create_ast_node(AST_ZERO_OR_ONE_FUNCTION);
-            $$->rule_element = $1;
-            code_allowed = 1;
+    | NON_TERMINAL {
+            TRACE("rule_element: NON_TERMINAL");
+            $$ = (ast_rule_element_t*)create_ast_node("rule_element", NTERM_RULE_ELEMENT);
+            $$->token = $1;
+            $$->clause = NULL;
         }
-        else
-            yyerror("unexpected QUESTION");
-    }
-    ;
-
-one_or_more_function
-    : rule_element PLUS {
-        if(func_allowed) {
-            $$ = (one_or_more_function_t*)create_ast_node(AST_ONE_OR_MORE_FUNCTION);
-            $$->rule_element = $1;
-            code_allowed = 1;
+    | list_clause {
+            TRACE("rule_element: list_clause");
+            $$ = (ast_rule_element_t*)create_ast_node("rule_element", NTERM_RULE_ELEMENT);
+            $$->clause = $1;
+            $$->token = NULL;
         }
-        else
-            yyerror("unexpected PLUS");
-    }
     ;
 
-or_function
-    : rule_element PIPE {
-        func_allowed = 0;
-        code_allowed = 0;
-    } rule_element {
-        $$ = (or_function_t*)create_ast_node(AST_OR_FUNCTION);
-        $$->left = $1;
-        $$->right = $4;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
-    ;
-
-grouping_function
-    : OPAREN rule_element_list CPAREN {
-        $$ = (grouping_function_t*)create_ast_node(AST_GROUPING_FUNCTION);
-        $$->rule_element_list = $2;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
-    ;
-
-inline_code
-    : CODE_BLOCK {
-        if(code_allowed) {
-            $$ = (inline_code_t*)create_ast_node(AST_INLINE_CODE);
-            $$->code = $1;
-            func_allowed = 0;
-            code_allowed = 0;
+list_clause
+    : LIST '(' rule_element_list ')' {
+            $$ = (ast_list_clause_t*)create_ast_node("list_clause", NTERM_LIST);
+            $$->re_list = $3;
         }
-        else
-            yyerror("unexpected CODE_BLOCK");
-    }
     ;
 
 %%
@@ -285,3 +236,15 @@ const char* token_to_str(int tok) {
     return yysymbol_name(YYTRANSLATE(tok));
 }
 
+void init_parser(void) {
+
+    LOCAL_VERBOSITY(15);
+    HEADER;
+
+    const char* fname = raw_string(get_cmd_opt("files"));
+    yyin = fopen(fname, "r");
+    if(yyin == NULL) {
+        fprintf(stderr, "cannot open input file \"%s\": %s\n", fname, strerror(errno));
+        cmdline_help();
+    }
+}

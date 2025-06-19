@@ -2,17 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
+//#include <errno.h>
 
 #include "ast.h"
-#include "scanner.h"
+//#include "scanner.h"
 #include "parser.h"
 //#include "ast.h"
 #include "cmdline.h"
-#include "master_list.h"
 #include "trace.h"
-
-#include "table_pass1.h"
 
 void cmdline(int argc, char** argv, char** env) {
 
@@ -32,20 +29,10 @@ int main(int argc, char** argv, char** env) {
 
     cmdline(argc, argv, env);
 
-    yyin = fopen(raw_string(get_cmd_opt("files")), "r");
-    if(yyin == NULL) {
-        fprintf(stderr, "cannot open input file \"%s\": %s\n", argv[1], strerror(errno));
-        cmdline_help();
-    }
-
+    init_parser();
     yyparse();
 
-    make_raw_lists();
-    //traverse_ast(root_node);
-
-    create_table_pass1();
-
-    dump_master_list();
+    traverse_ast(root_node);
 
     return 0;
 }

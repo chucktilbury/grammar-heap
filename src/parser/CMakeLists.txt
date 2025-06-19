@@ -19,14 +19,11 @@ FLEX_TARGET(SCANNER
 
 ADD_FLEX_BISON_DEPENDENCY(SCANNER PARSER)
 
-file(GLOB_RECURSE ${PROJECT_NAME}_files
-    ${PROJECT_SOURCE_DIR}/*.c
-)
-
 add_library(${PROJECT_NAME} STATIC
     ${BISON_PARSER_OUTPUTS}
     ${FLEX_SCANNER_OUTPUTS}
-    ${${PROJECT_NAME}_files}
+    ast.c
+    tokens.c
 )
 
 target_include_directories(${PROJECT_NAME}

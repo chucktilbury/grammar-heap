@@ -11,324 +11,235 @@
 
 #include "ast.h"
 #include "parser.h"
-#include "errors.h"
+#include "pointer_list.h"
+#include "alloc.h"
+#include "scanner.h"
 #include "trace.h"
+#include "errors.h"
 
 #ifdef USE_TRACE
-#define TRACE_TOKEN(t) TRACE("token: \"%s\": %s", raw_string((t)->str), tok_to_str((t)->type))
+
+static inline void trace_token(token_t* tok) {
+
+    if(tok != NULL) {
+        switch(tok->type) {
+            case TERM_PRETEXT:
+            case TERM_PRECODE:
+            case TERM_POSTCODE:
+            case TERM_ERROR:
+            case TERM_LIST:
+            case TERM_HEADER:
+            case TERM_CODE_BLOCK:
+                TRACE("terminal: %s", raw_string(tok->type_str));
+                break;
+            case TERM_TERMINAL_SYMBOL:
+            case TERM_TERMINAL_KEYWORD:
+            case TERM_TERMINAL_OPER:
+            case TERM_NON_TERMINAL:
+                TRACE("terminal: %s: %s", raw_string(tok->type_str), raw_string(tok->raw_str));
+                break;
+            default:
+                FATAL("internal error: invalid node type in trace_token()");
+        }
+    }
+}
+
+#define TRACE_TOKEN(n) trace_token(n)
+
+#define AST_ENTER \
+    do { \
+        ASSERT(node != NULL, "AST node cannot be NULL"); \
+        ASSERT(node->type == AST_NTERM, "AST node is not a non-terminal node"); \
+        ENTER; \
+    } while(0)
+
+#define AST_RETURN RETURN()
+
 #else
-#define TRACE_TOKEN(t)
+
+#define TRACE_TOKEN(n)
+#define AST_ENTER
+#define AST_RETURN
+
 #endif
 
-static void grammar(grammar_t* node);
-static void grammar_list(grammar_list_t* node);
-static void grammar_rule(grammar_rule_t* node);
-static void rule_element_list(rule_element_list_t* node);
-static void rule_element(rule_element_t* node);
-static void or_function(or_function_t* node);
-static void zero_or_more_function(zero_or_more_function_t* node);
-static void zero_or_one_function(zero_or_one_function_t* node);
-static void one_or_more_function(one_or_more_function_t* node);
-static void grouping_function(grouping_function_t* node);
-static void directive(directive_t* node);
-static void inline_code(inline_code_t* node);
+extern int yylineno;
 
-/*
- grammar
- : grammar_list
- ;
- */
-static void grammar(grammar_t* node) {
-
-    ENTER;
-
-    grammar_list(node->grammar_list);
-
-    RETURN();
-}
+static void traverse_grammar(ast_grammar_t* node);
+static void traverse_grammar_item(ast_grammar_item_t* node);
+static void traverse_directive(ast_directive_t* node);
+static void traverse_rule(ast_rule_t* node);
+static void traverse_alternative(ast_alternative_t* node);
+static void traverse_alternative_list(ast_alternative_list_t* node);
+static void traverse_rule_element_list(ast_rule_element_list_t* node);
+static void traverse_rule_element(ast_rule_element_t* node);
+static void traverse_list_clause(ast_list_clause_t* node);
 
 
-/*
- grammar_list
- : non_terminal_rule  SEMI
- | grammar non_terminal_rule SEMI
- ;
- */
-static void grammar_list(grammar_list_t* node) {
+static void traverse_grammar(ast_grammar_t* node) {
 
-    ENTER;
+    AST_ENTER;
+
     int mark = 0;
-    grammar_rule_t* rule;
+    ast_node_t* item;
 
-    while(NULL != (rule = (grammar_rule_t*)iterate_ast_node_list(node->list, &mark)))
-        grammar_rule(rule);
+    while(NULL != (item = iterate_ptr_list(node->list, &mark)))
+        traverse_grammar_item((ast_grammar_item_t*)item);
 
-    RETURN();
+    AST_RETURN;
 }
 
+static void traverse_grammar_item(ast_grammar_item_t* node) {
 
-/*
-grammar_rule
- : NON_TERMINAL grouping_function
- ;
- */
-static void grammar_rule(grammar_rule_t* node) {
+    AST_ENTER;
 
-    ENTER;
-
-    if(node->NON_TERMINAL != NULL) {
-        TRACE_TOKEN(node->NON_TERMINAL);
-        grouping_function(node->grouping_function);
-    }
+    if(node->node->type == NTERM_DIRECTIVE)
+        traverse_directive((ast_directive_t*)node->node);
+    else if(node->node->type == NTERM_RULE)
+        traverse_rule((ast_rule_t*)node->node);
     else
-        directive(node->directive);
+        FATAL("unknown node type in traverse_grammar_item(): %d", node->node->type);
 
-    RETURN();
+    AST_RETURN;
 }
 
-static void directive(directive_t* node) {
+static void traverse_directive(ast_directive_t* node) {
 
-    ENTER;
+    AST_ENTER;
 
-    // type is an int and code is a token
-    TRACE("type: %s", token_to_str(node->type));
-    TRACE("code: \n%s\n", raw_string(node->code->str));
+    TRACE_TOKEN(node->dir_type);
+    TRACE_TOKEN(node->code);
 
-    RETURN();
+    AST_RETURN;
 }
 
-/*
-rule_element_list
- : rule_element
- | rule_element_list rule_element
- ;
- */
-static void rule_element_list(rule_element_list_t* node) {
+static void traverse_rule(ast_rule_t* node) {
 
-    ENTER;
+    AST_ENTER;
+
+    TRACE_TOKEN(node->nterm);
+    traverse_alternative_list(node->alt_list);
+
+    // could be NULL if there is no error execution clause
+    TRACE_TOKEN(node->ecode);
+
+    AST_RETURN;
+}
+
+static void traverse_alternative(ast_alternative_t* node) {
+
+    AST_ENTER;
+
+    traverse_rule_element_list(node->re_list);
+    TRACE_TOKEN(node->code);
+
+    AST_RETURN;
+}
+
+static void traverse_alternative_list(ast_alternative_list_t* node) {
+
+    AST_ENTER;
+
     int mark = 0;
-    rule_element_t* rule;
+    ast_alternative_t* item;
 
-    while(NULL != (rule = (rule_element_t*)iterate_ast_node_list(node->list, &mark)))
-        rule_element(rule);
+    while(NULL != (item = iterate_ptr_list(node->list, &mark)))
+        traverse_alternative((ast_alternative_t*)item);
 
-    RETURN();
+    AST_RETURN;
 }
 
+static void traverse_rule_element_list(ast_rule_element_list_t* node) {
 
-/*
-rule_element
- : NON_TERMINAL
- | TERMINAL_NAME
- | TERMINAL_OPER
- | TERMINAL_SYMBOL
- | or_function
- | zero_or_more_function
- | zero_or_one_function
- | one_or_more_function
- | grouping_function
- ;
- */
-static void rule_element(rule_element_t* node) {
+    AST_ENTER;
 
-    ENTER;
+    int mark = 0;
+    ast_alternative_t* item;
+
+    while(NULL != (item = iterate_ptr_list(node->list, &mark)))
+        traverse_rule_element((ast_rule_element_t*)item);
+
+    AST_RETURN;
+}
+
+static void traverse_rule_element(ast_rule_element_t* node) {
+
+    AST_ENTER;
 
     if(node->token != NULL) {
         TRACE_TOKEN(node->token);
-        switch(node->token->type) {
-            case TERMINAL_KEYWORD:
-                break;
-            case TERMINAL_OPER:
-                break;
-            case TERMINAL_SYMBOL:
-                break;
-            case NON_TERMINAL:
-                break;
-            default:
-                FATAL("unknown terminal type: %s", tok_to_str(node->token->type));
-        }
     }
-    else if(node->nterm != NULL) {
-        switch(node->nterm->type) {
-            case AST_OR_FUNCTION:
-                or_function((or_function_t*)node->nterm);
-                break;
-            case AST_ZERO_OR_MORE_FUNCTION:
-                zero_or_more_function((zero_or_more_function_t*)node->nterm);
-                break;
-            case AST_ZERO_OR_ONE_FUNCTION:
-                zero_or_one_function((zero_or_one_function_t*)node->nterm);
-                break;
-            case AST_ONE_OR_MORE_FUNCTION:
-                one_or_more_function((one_or_more_function_t*)node->nterm);
-                break;
-            case AST_GROUPING_FUNCTION:
-                grouping_function((grouping_function_t*)node->nterm);
-                break;
-            case AST_INLINE_CODE:
-                inline_code((inline_code_t*)node->nterm);
-                break;
-
-            default:
-                FATAL("unknown non-terminal type: %s", nterm_to_str(node->nterm->type));
-        }
-    }
+    else if(node->clause != NULL)
+        traverse_list_clause(node->clause);
     else
-        FATAL("invalid rule element");
+        FATAL("invalid node in traverse_rule_element()");
 
-    RETURN();
+
+    AST_RETURN;
+}
+
+static void traverse_list_clause(ast_list_clause_t* node) {
+
+    AST_ENTER;
+
+    traverse_rule_element_list(node->re_list);
+
+    AST_RETURN;
+}
+
+static size_t nterm_size(ast_nterm_type_t type) {
+
+    return (type == NTERM_ALTERNATIVE)? sizeof(ast_alternative_t) :
+    (type == NTERM_ALTERNATIVE_LIST)? sizeof(ast_alternative_list_t) :
+    (type == NTERM_DIRECTIVE)? sizeof(ast_directive_t) :
+    (type == NTERM_GRAMMAR)? sizeof(ast_grammar_t) :
+    (type == NTERM_GRAMMAR_ITEM)? sizeof(ast_grammar_item_t) :
+    (type == NTERM_RULE)? sizeof(ast_rule_t) :
+    (type == NTERM_RULE_ELEMENT)? sizeof(ast_rule_element_t) :
+    (type == NTERM_RULE_ELEMENT_LIST)? sizeof(ast_rule_element_list_t) :
+    (type == NTERM_LIST)? sizeof(ast_list_clause_t) : (size_t)-1;
 }
 
 /*
-or_function
- : rule_element PIPE rule_element
- ;
+ * PUBLIC INTERFACE
  */
-static void or_function(or_function_t* node) {
 
-    ENTER;
+ast_node_t* create_ast_node(const char* name, ast_nterm_type_t type) {
 
-    rule_element(node->left);
-    rule_element(node->right);
-
-    RETURN();
-}
-
-/*
-zero_or_more_function
- : rule_element QUESTION
- ;
- */
-static void zero_or_more_function(zero_or_more_function_t* node) {
-
-    ENTER;
-
-    rule_element(node->rule_element);
-
-    RETURN();
-}
-
-/*
-zero_or_one_function
- : rule_element STAR
- ;
- */
-static void zero_or_one_function(zero_or_one_function_t* node) {
-
-    ENTER;
-
-    rule_element(node->rule_element);
-
-    RETURN();
-}
-
-
-/*
-one_or_more_function
- : rule_element PLUS
- ;
- */
-static void one_or_more_function(one_or_more_function_t* node) {
-
-    ENTER;
-
-    rule_element(node->rule_element);
-
-    RETURN();
-}
-
-/*
-grouping_function
- : OPAREN rule_element_list CPAREN
- ;
- */
-static void grouping_function(grouping_function_t* node) {
-
-    ENTER;
-
-    rule_element_list(node->rule_element_list);
-
-    RETURN();
-}
-
-static void inline_code(inline_code_t* node) {
-
-    //grouping_function(node->group);
-    TRACE_TOKEN(node->code);
-}
-
-#include "alloc.h"
-
-static size_t get_node_size(ast_type_t type) {
-
-    return (type == AST_GRAMMAR)                ? sizeof(grammar_t) :
-            (type == AST_GRAMMAR_LIST)          ? sizeof(grammar_list_t) :
-            (type == AST_GRAMMAR_RULE)          ? sizeof(grammar_rule_t) :
-            (type == AST_RULE_ELEMENT_LIST)     ? sizeof(rule_element_list_t) :
-            (type == AST_RULE_ELEMENT)          ? sizeof(rule_element_t) :
-            (type == AST_OR_FUNCTION)           ? sizeof(or_function_t) :
-            (type == AST_ZERO_OR_MORE_FUNCTION) ? sizeof(zero_or_more_function_t) :
-            (type == AST_ZERO_OR_ONE_FUNCTION)  ? sizeof(zero_or_one_function_t) :
-            (type == AST_ONE_OR_MORE_FUNCTION)  ? sizeof(one_or_more_function_t) :
-            (type == AST_GROUPING_FUNCTION)     ? sizeof(grouping_function_t) :
-            (type == AST_DIRECTIVE)     ? sizeof(directive_t) :
-            (type == AST_INLINE_CODE)     ? sizeof(inline_code_t) :
-            (size_t)-1;
-}
-
-ast_node_t* create_ast_node(ast_type_t type) {
-
-    ast_node_t* node = _ALLOC(get_node_size(type));
+    ast_node_t* node = _ALLOC(nterm_size(type));
     node->type = type;
+    node->name = create_string(name);
 
     return node;
 }
 
-void traverse_ast(grammar_t* node) {
+const char* nterm_to_str(ast_node_t* node) {
+
+    return raw_string(node->name);
+}
+
+const char* nterm_type_to_str(ast_node_t* node) {
+
+    return
+        (node->type == NTERM_ALTERNATIVE)? "NTERM_ALTERNATIVE" :
+        (node->type == NTERM_ALTERNATIVE_LIST)? "NTERM_ALTERNATIVE_LIST" :
+        (node->type == NTERM_DIRECTIVE)? "NTERM_DIRECTIVE" :
+        (node->type == NTERM_GRAMMAR)? "NTERM_GRAMMAR" :
+        (node->type == NTERM_RULE)? "NTERM_RULE" :
+        (node->type == NTERM_RULE_ELEMENT)? "NTERM_RULE_ELEMENT" :
+        (node->type == NTERM_RULE_ELEMENT_LIST)? "NTERM_RULE_ELEMENT_LIST" :
+        (node->type == NTERM_LIST)? "NTERM_LIST" : "UNKNOWN";
+}
+
+void traverse_ast(ast_grammar_t* node) {
 
     LOCAL_VERBOSITY(9);
     HEADER;
-    ENTER;
+    AST_ENTER;
 
-    if(errors == 0)
-        grammar(node);
+    traverse_grammar(root_node);
 
-    RETURN();
+    AST_RETURN;
+
 }
 
-ast_node_list_t* create_ast_node_list(void) {
-
-    return (ast_node_list_t*)create_ptr_list();
-}
-
-void append_ast_node_list(ast_node_list_t* lst, ast_node_t* ptr) {
-
-    append_ptr_list((pointer_list_t*)lst, (void*)ptr);
-}
-
-ast_node_t* iterate_ast_node_list(ast_node_list_t* lst, int* post) {
-
-    return (ast_node_t*)iterate_ptr_list((pointer_list_t*)lst, post);
-}
-
-int len_ast_node_list(ast_node_list_t* lst) {
-
-    return len_ptr_list((pointer_list_t*)lst);
-}
-
-const char* nterm_to_str(ast_type_t type) {
-
-    return (type == AST_GRAMMAR)                ? "AST_GRAMMAR" :
-            (type == AST_GRAMMAR_LIST)          ? "AST_GRAMMAR_LIST" :
-            (type == AST_GRAMMAR_RULE)          ? "AST_GRAMMAR_RULE" :
-            (type == AST_RULE_ELEMENT_LIST)     ? "AST_RULE_ELEMENT_LIST" :
-            (type == AST_RULE_ELEMENT)          ? "AST_RULE_ELEMENT" :
-            (type == AST_OR_FUNCTION)           ? "AST_OR_FUNCTION" :
-            (type == AST_ZERO_OR_MORE_FUNCTION) ? "AST_ZERO_OR_MORE_FUNCTION" :
-            (type == AST_ZERO_OR_ONE_FUNCTION)  ? "AST_ZERO_OR_ONE_FUNCTION" :
-            (type == AST_ONE_OR_MORE_FUNCTION)  ? "AST_ONE_OR_MORE_FUNCTION" :
-            (type == AST_GROUPING_FUNCTION)     ? "AST_GROUPING_FUNCTION" :
-            (type == AST_DIRECTIVE)     ? "AST_DIRECTIVE" :
-            (type == AST_INLINE_CODE)     ? "AST_INLINE_CODE" :
-            "UNKNOWN";
-}
