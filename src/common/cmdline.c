@@ -304,20 +304,6 @@ static void add_cmdline_arg(cmdline_entry_t* item, const char* str) {
             append_string_list(item->value, create_string(str));
         }
     }
-    // if((item->type & CMD_LIST) && (item->value != NULL)) {
-    //     append_string_list(item->value, create_string(str));
-    // }
-    // else if(item->value != NULL) {
-    //     int mark = 0;
-    //     string_t* s = iterate_string_list(item->value, &mark); // get the first item.
-    //     clear_string(s);
-    //     append_string(s, str);
-    // }
-    // else {
-    //     item->value = split_string(str, ':');
-    //     // item->value = create_string_list();
-    //     // append_string_list(item->value, create_string(str));
-    // }
 }
 
 /*
@@ -374,7 +360,7 @@ static void parse_short_option(const char* str) {
             item->type |= CMD_SEEN;
             if(item->type & CMD_ARGS) {
                 if(str[idx + 1] == '=' && str[idx + 2] != '\0') {
-                    printf("here\n");
+                    //printf("here\n");
                     add_cmdline_arg(item, &str[idx + 2]);
                     consume_cmd();
                     return;
@@ -687,6 +673,22 @@ void cmdline_vers(void) {
 
     show_cmdline_vers();
     exit(1);
+}
+
+int in_cmd_list(const char* name, const char* item) {
+
+    int retv = 0;
+    int mark = 0;
+    string_t* str;
+
+    while(NULL != (str = iterate_cmd_opt(name, &mark))) {
+        if(!comp_string_str(str, item)) {
+            retv++;
+            break;
+        }
+    }
+
+    return retv;
 }
 
 #ifdef TEST_COMMAND_LINE

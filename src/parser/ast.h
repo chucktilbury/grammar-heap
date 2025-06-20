@@ -85,7 +85,7 @@ typedef struct _ast_list_clause_t_ {
 } ast_list_clause_t;
 
 ast_node_t* create_ast_node(const char* name, ast_nterm_type_t type);
-void traverse_ast(ast_grammar_t* node);
+void traverse_ast(void);
 const char* nterm_to_str(ast_node_t* node);
 const char* nterm_type_to_str(ast_node_t* node);
 

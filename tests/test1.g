@@ -1,5 +1,15 @@
 
 # a simple terminal and non-terminal in a single rule
+%pretext {}
 
-simple ('token' something_else)
-something_else (IDENTIFIER)
+simple
+    : something_else {}
+    | POOTS {}
+    ;
+
+something_else
+    : IDENTIFIER {}
+    | 'asdf' {}
+    ;
+
+%pretext {}

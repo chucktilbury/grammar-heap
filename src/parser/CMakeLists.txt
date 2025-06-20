@@ -31,11 +31,8 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/../common
-        ${PROJECT_SOURCE_DIR}/../lists
-        ${PROJECT_SOURCE_DIR}/../render
         ${PROJECT_SOURCE_DIR}/../parser
-        ${PROJECT_SOURCE_DIR}/../pgen
-        ${PROJECT_SOURCE_DIR}/../gc
+        ${PROJECT_SOURCE_DIR}/../main
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE

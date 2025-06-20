@@ -8,19 +8,19 @@
 #include "ast.h"
 #include "trace.h"
 #include "cmdline.h"
+#include "errors.h"
+#include "master_list.h"
 
 int yylex(void);
 void yyerror(const char*);
 extern int yylineno;
-ast_grammar_t* root_node;
-int errors = 0;
 extern FILE *yyin, *yyout;
 
-// This exists because having some functions appearing after a code block
-// does not make sense and it should be a syntax error. Rather than
-// complicate the grammar, it seems better to just make a flag instead.
-int func_allowed = 0;
-int code_allowed = 0;
+int errors = 0;
+int header_code_seen = 0;
+int pre_text_seen = 0;
+int pre_code_seen = 0;
+int post_code_seen = 0;
 
 %}
 
@@ -34,7 +34,6 @@ int code_allowed = 0;
 // this goes at the bottom of the generated header file.
 %code provides {
 const char* token_to_str(int);
-extern ast_grammar_t* root_node;
 void init_parser(void);
 extern int errors;
 }
@@ -81,7 +80,8 @@ extern int errors;
 grammar
     : grammar_item  {
             TRACE("create the grammar");
-            root_node = $$ = (ast_grammar_t*)create_ast_node("grammar", NTERM_GRAMMAR);
+            $$ = (ast_grammar_t*)create_ast_node("grammar", NTERM_GRAMMAR);
+            set_master_list_root_node($$);
             $$->list = create_ptr_list();
             append_ptr_list($$->list, $1);
         }
@@ -106,24 +106,44 @@ grammar_item
 
 directive
     : PRETEXT CODE_BLOCK {
+            if(pre_text_seen)
+                yyerror("only one %pretext directive is allowed in module");
+            else
+                pre_text_seen++;
+
             TRACE("PRETEXT directive");
             $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
             $$->dir_type = $1;
             $$->code = $2;
         }
     | PRECODE CODE_BLOCK {
+            if(pre_code_seen)
+                yyerror("only one %precode directive is allowed in module");
+            else
+                pre_code_seen++;
+
             TRACE("PRECODE directive");
             $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
             $$->dir_type = $1;
             $$->code = $2;
         }
     | POSTCODE CODE_BLOCK {
+            if(post_code_seen)
+                yyerror("only one %postcode directive is allowed in module");
+            else
+                post_code_seen++;
+
             TRACE("POSTCODE directive");
             $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
             $$->dir_type = $1;
             $$->code = $2;
         }
     | HEADERCODE CODE_BLOCK {
+            if(header_code_seen)
+                yyerror("only one %header directive is allowed in module");
+            else
+                header_code_seen++;
+
             TRACE("HEADER directive");
             $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
             $$->dir_type = $1;
@@ -137,14 +157,6 @@ rule
             $$ = (ast_rule_t*)create_ast_node("rule", NTERM_RULE);
             $$->nterm = $1;
             $$->alt_list = $3;
-            $$->ecode = NULL;
-        }
-    | NON_TERMINAL ':' alternative_list '|' ERROR CODE_BLOCK ';' {
-            TRACE("rule with error block");
-            $$ = (ast_rule_t*)create_ast_node("rule", NTERM_RULE);
-            $$->nterm = $1;
-            $$->alt_list = $3;
-            $$->ecode = $6;
         }
     ;
 
@@ -163,9 +175,15 @@ alternative_list
 
 alternative
     : rule_element_list CODE_BLOCK {
-            TRACE("rule element list");
+            TRACE("normal alternative");
             $$ = (ast_alternative_t*)create_ast_node("alternative", NTERM_ALTERNATIVE);
             $$->re_list = $1;
+            $$->code = $2;
+        }
+    | ERROR CODE_BLOCK {
+            TRACE("error alternative");
+            $$ = (ast_alternative_t*)create_ast_node("alternative", NTERM_ALTERNATIVE);
+            $$->re_list = NULL;
             $$->code = $2;
         }
     ;
@@ -238,13 +256,21 @@ const char* token_to_str(int tok) {
 
 void init_parser(void) {
 
-    LOCAL_VERBOSITY(15);
-    HEADER;
+    if(in_cmd_list("dump", "parser"))
+        LOCAL_VERBOSITY(0);
+    else
+        LOCAL_VERBOSITY(19);
+
+    TRACE_HEADER;
 
     const char* fname = raw_string(get_cmd_opt("files"));
-    yyin = fopen(fname, "r");
-    if(yyin == NULL) {
-        fprintf(stderr, "cannot open input file \"%s\": %s\n", fname, strerror(errno));
-        cmdline_help();
+    if(fname != NULL) {
+        yyin = fopen(fname, "r");
+        if(yyin == NULL) {
+            fprintf(stderr, "cannot open input file \"%s\": %s\n", fname, strerror(errno));
+            cmdline_help();
+        }
     }
+    else
+        FATAL("internal error in %s: command line failed", __func__);
 }
