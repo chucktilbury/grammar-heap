@@ -11,12 +11,16 @@
 
 typedef struct {
     ast_grammar_t* root_node;
+    string_t* start_node;
     pointer_list_t* nterms;
     pointer_list_t* terms;
     string_t* precode;
     string_t* postcode;
     string_t* pretext;
+    string_t* posttext;
     string_t* headertext;
+    string_t* term_def;
+    string_t* nterm_def;
 } master_list_t;
 
 void init_master_list(void);

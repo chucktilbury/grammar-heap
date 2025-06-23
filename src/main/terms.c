@@ -62,3 +62,20 @@ term_elem_t* iterate_term_list(int* mark) {
     return iterate_ptr_list(get_master_list()->terms, mark);
 }
 
+static int comp_func(void* ptr1, void* ptr2) {
+
+    return comp_string(((term_elem_t*)ptr1)->type_str, ((term_elem_t*)ptr2)->type_str);
+}
+
+void sort_term_list(void) {
+
+    sort_ptr_list(get_master_list()->terms, comp_func);
+}
+
+term_list_t* find_term(string_t* str) {
+
+    term_elem_t elem;
+    elem.type_str = str;
+
+    return find_ptr_list(get_master_list()->terms, &elem, comp_func);
+}

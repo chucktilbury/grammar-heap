@@ -1,6 +1,8 @@
 # Random Notes
 These notes help me organize my thoughts.
 
+* add directives for terminal and non-terminal types
+
 -----------
 
 ## Another approach

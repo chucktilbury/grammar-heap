@@ -19,8 +19,11 @@ extern FILE *yyin, *yyout;
 int errors = 0;
 int header_code_seen = 0;
 int pre_text_seen = 0;
+int post_text_seen = 0;
 int pre_code_seen = 0;
 int post_code_seen = 0;
+int term_def_seen = 0;
+int nterm_def_seen = 0;
 
 %}
 
@@ -51,8 +54,8 @@ extern int errors;
     ast_list_clause_t* list_clause;
 };
 
-%token<token> PRETEXT PRECODE POSTCODE ERROR LIST HEADERCODE
-%token<token> TERMINAL_SYMBOL TERMINAL_KEYWORD TERMINAL_OPER
+%token<token> PRETEXT POSTTEXT PRECODE POSTCODE NTERM_DEF TERM_DEF HEADERCODE
+%token<token> TERMINAL_SYMBOL TERMINAL_KEYWORD TERMINAL_OPER ERROR LIST
 %token<token> CODE_BLOCK NON_TERMINAL
 
 %type<grammar> grammar
@@ -81,9 +84,9 @@ grammar
     : grammar_item  {
             TRACE("create the grammar");
             $$ = (ast_grammar_t*)create_ast_node("grammar", NTERM_GRAMMAR);
-            set_master_list_root_node($$);
             $$->list = create_ptr_list();
             append_ptr_list($$->list, $1);
+            set_master_list_root_node($$);
         }
     | grammar grammar_item {
             TRACE("add grammar rule");
@@ -112,6 +115,17 @@ directive
                 pre_text_seen++;
 
             TRACE("PRETEXT directive");
+            $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
+            $$->dir_type = $1;
+            $$->code = $2;
+        }
+    | POSTTEXT CODE_BLOCK {
+            if(post_text_seen)
+                yyerror("only one %posttext directive is allowed in module");
+            else
+                pre_text_seen++;
+
+            TRACE("POSTTEXT directive");
             $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
             $$->dir_type = $1;
             $$->code = $2;
@@ -149,6 +163,28 @@ directive
             $$->dir_type = $1;
             $$->code = $2;
         }
+    | NTERM_DEF CODE_BLOCK {
+            if(nterm_def_seen)
+                yyerror("only one %nterm_def directive is allowed in module");
+            else
+                header_code_seen++;
+
+            TRACE("NTERM_DEF directive");
+            $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
+            $$->dir_type = $1;
+            $$->code = $2;
+    }
+    | TERM_DEF CODE_BLOCK {
+            if(term_def_seen)
+                yyerror("only one %term_def directive is allowed in module");
+            else
+                header_code_seen++;
+
+            TRACE("TERM_DEF directive");
+            $$ = (ast_directive_t*)create_ast_node("directive", NTERM_DIRECTIVE);
+            $$->dir_type = $1;
+            $$->code = $2;
+    }
     ;
 
 rule
@@ -243,9 +279,13 @@ list_clause
 
 %%
 
+extern char* yytext;
 void yyerror(const char* s) {
 
-    fprintf(stderr, "%d: %s\n", yylineno, s);
+    if(yytext[0] != '\0')
+        fprintf(stderr, "%d: %s: %s\n", yylineno, s, yytext);
+    else
+        fprintf(stderr, "%d: %s\n", yylineno, s);
     errors++;
 }
 

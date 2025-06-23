@@ -43,9 +43,12 @@ token_t* create_token(const char* name, int type) {
         case TERM_LIST:            tok->type_str = create_string("TERM_LIST");         break;
         case TERM_HEADER:          tok->type_str = create_string("TERM_HEADER");       break;
         case TERM_PRETEXT:         tok->type_str = create_string("TERM_PRETEXT");      break;
+        case TERM_POSTTEXT:        tok->type_str = create_string("TERM_POSTTEXT");     break;
         case TERM_PRECODE:         tok->type_str = create_string("TERM_PRECODE");      break;
         case TERM_POSTCODE:        tok->type_str = create_string("TERM_POSTCODE");     break;
         case TERM_ERROR:           tok->type_str = create_string("TERM_ERROR");        break;
+        case TERM_TERM_DEF:        tok->type_str = create_string("TERM_TERM_DEF");     break;
+        case TERM_NTERM_DEF:       tok->type_str = create_string("TERM_NTERM_DEF");    break;
         default: FATAL("unknown token type: %s", token_to_str(type));
     }
 

@@ -61,3 +61,21 @@ nterm_elem_t* iterate_nterm_list(int* mark) {
     return iterate_ptr_list(get_master_list()->nterms, mark);
 }
 
+static int comp_func(void* ptr1, void* ptr2) {
+
+    return comp_string(((nterm_elem_t*)ptr1)->name, ((nterm_elem_t*)ptr2)->name);
+}
+
+void sort_nterm_list(void) {
+
+    sort_ptr_list(get_master_list()->nterms, comp_func);
+}
+
+nterm_elem_t* find_nterm(string_t* str) {
+
+    nterm_elem_t elem;
+    elem.name = str;
+
+    return find_ptr_list(get_master_list()->nterms, &elem, comp_func);
+}
+

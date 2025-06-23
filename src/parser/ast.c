@@ -98,6 +98,9 @@ static void _rule_element(ast_rule_element_t* node) {
         switch(node->token->type) {
             case TERM_NON_TERMINAL:
             case TERM_PRETEXT:
+            case TERM_POSTTEXT:
+            case TERM_NTERM_DEF:
+            case TERM_TERM_DEF:
             case TERM_PRECODE:
             case TERM_POSTCODE:
             case TERM_ERROR:

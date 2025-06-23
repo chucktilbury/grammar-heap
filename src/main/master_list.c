@@ -5,7 +5,7 @@
 #include "ast.h"
 #include "alloc.h"
 #include "master_list.h"
-#include "parser.h"
+//#include "parser.h"
 #include "errors.h"
 #include "pointer_list.h"
 #include "string_buffer.h"
@@ -13,8 +13,10 @@
 #include "trace.h"
 #include "terms.h"
 #include "nterms.h"
+#include "make_dot.h"
 
 static master_list_t* master_list = NULL;
+static int first_rule_seen = 0;
 
 // defined in parse.y
 extern int errors;
@@ -61,8 +63,17 @@ static void _directive(ast_directive_t* node) {
         case TERM_PRETEXT:
             master_list->pretext = node->code->raw_str;
             break;
+        case TERM_POSTTEXT:
+            master_list->posttext = node->code->raw_str;
+            break;
         case TERM_HEADER:
             master_list->headertext = node->code->raw_str;
+            break;
+        case TERM_TERM_DEF:
+            master_list->term_def = node->code->raw_str;
+            break;
+        case TERM_NTERM_DEF:
+            master_list->nterm_def = node->code->raw_str;
             break;
         default:
             FATAL("unknown node type: %d", node->dir_type->type);
@@ -71,6 +82,10 @@ static void _directive(ast_directive_t* node) {
 
 static void _rule(ast_rule_t* node) {
 
+    if(first_rule_seen == 0) {
+        master_list->start_node = node->nterm->raw_str;
+        first_rule_seen++;
+    }
     add_nterm_list(node->nterm->raw_str, node->alt_list);
     _alternative_list(node->alt_list);
 }
@@ -160,6 +175,15 @@ void create_master_list(void) {
 
     _grammar(master_list->root_node);
 
+    // prepare them for the binary search functions.
+    sort_term_list();
+    sort_nterm_list();
+
+    int mark = 0;
+    nterm_elem_t* nterm;
+
+    while(NULL != (nterm = iterate_nterm_list((&mark))))
+        create_dot(nterm->name);
 }
 
 void destroy_master_list(void) {
@@ -201,6 +225,11 @@ void dump_master_list(void) {
     int mark = 0;
     nterm_elem_t* nelem;
     term_elem_t* elem;
+
+    SEPARATOR;
+    PRINT("\tstarting non-terminal\n");
+    SEPARATOR;
+    PRINT("\t%-15s\n\n", master_list->start_node->buffer);
 
     SEPARATOR;
     PRINT("\tnon-terminals\n");

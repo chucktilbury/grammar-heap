@@ -7,6 +7,7 @@
 
 int depth;
 string_t* strbuf = NULL;
+void yyerror(const char* s);
 
 %}
 
@@ -22,38 +23,47 @@ string_t* strbuf = NULL;
 
 %%
 
-"%pretext"  {
-    //yylval.terminal = create_token(yytext, PRETEXT);
+"%nterm_def" {
+    yylval.token = create_token(yytext, TERM_NTERM_DEF);
+    return NTERM_DEF;
+}
+
+"%term_def" {
+    yylval.token = create_token(yytext, TERM_TERM_DEF);
+    return TERM_DEF;
+}
+
+"%pretext" {
     yylval.token = create_token(yytext, TERM_PRETEXT);
     return PRETEXT;
 }
 
+"%posttext" {
+    yylval.token = create_token(yytext, TERM_POSTTEXT);
+    return POSTTEXT;
+}
+
 "%precode"  {
-    //yylval.terminal = create_token(yytext, PRECODE);
     yylval.token = create_token(yytext, TERM_PRECODE);
     return PRECODE;
 }
 
 "%postcode"  {
-    //yylval.terminal = create_token(yytext, POSTCODE);
     yylval.token = create_token(yytext, TERM_POSTCODE);
     return POSTCODE;
 }
 
 "%header" {
-    //yylval.terminal = create_token(yytext, HEADER);
     yylval.token = create_token(yytext, TERM_HEADER);
     return HEADERCODE;
 }
 
 "%error" {
-    //yylval.terminal = create_token(yytext, ERROR);
     yylval.token = create_token(yytext, TERM_ERROR);
     return ERROR;
 }
 
 "%list" {
-    //yylval.terminal = create_token(yytext, LIST);
     yylval.token = create_token(yytext, TERM_LIST);
     return LIST;
 }
@@ -127,6 +137,10 @@ string_t* strbuf = NULL;
 #[^\n]* { /* ignore comment */ }
 
 [ \t\r\n\v\f]* { /* ignore whitespace */ }
+
+. {
+    yyerror("syntax error: invalid character found");
+}
 
 %%
 

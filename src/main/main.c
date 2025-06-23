@@ -36,13 +36,16 @@ int main(int argc, char** argv, char** env) {
     // defined in parse.y
     init_master_list();
     init_parser();
+
     yyparse();
 
     if(errors > 0)
         return errors;
 
-    if(find_dumper("ast"))
+
+    if(find_dumper("ast")) {
         traverse_ast();
+    }
 
     create_master_list();
 

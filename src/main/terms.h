@@ -25,5 +25,7 @@ term_elem_t* create_term_elem(string_t* name, string_t* type_str, int type);
 void destroy_term_elem(term_elem_t* ptr);
 void add_term_elem(term_elem_t* ptr);
 term_elem_t* iterate_term_list(int* mark);
+void sort_term_list(void);
+term_list_t* find_term(string_t* str);
 
 #endif /* _TERMS_H_ */

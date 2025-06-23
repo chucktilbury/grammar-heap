@@ -13,6 +13,7 @@ typedef pointer_list_t nterm_list_t;
 typedef struct {
     string_t* name;
     ast_alternative_list_t* alts;
+    int ref_count;
 } nterm_elem_t;
 
 // non-terminal list
@@ -25,5 +26,8 @@ nterm_elem_t* create_nterm_elem(string_t* name, ast_alternative_list_t* alts);
 void destroy_nterm_elem(nterm_elem_t* ptr);
 void add_nterm_elem(nterm_elem_t* ptr);
 nterm_elem_t* iterate_nterm_list(int* mark);
+void sort_nterm_list(void);
+nterm_elem_t* find_nterm(string_t* str);
 
 #endif /* _NTERMS_H_ */
+

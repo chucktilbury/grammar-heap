@@ -13,7 +13,7 @@
 
 #ifdef USE_TRACE
 #include <stdio.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
 // defined in trace.c
 extern int trace_depth;
