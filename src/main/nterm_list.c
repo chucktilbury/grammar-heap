@@ -12,7 +12,7 @@
 #include "nterm_list.h"
 #include "alloc.h"
 #include "pointer_list.h"
-#include "string_list.h"
+//#include "string_list.h"
 //#include "nterm_rules.h"
 
 nterm_list_t* create_nterm_list(void) {
@@ -84,7 +84,7 @@ nterm_item_t* find_nterm(nterm_list_t* lst, const char* str) {
     nterm_item_t* item = create_nterm_item(ptr, ptr, NULL);
 
     nterm_item_t* retv = NULL;
-    int val = find_ptr_list((pointer_list_t*)lst, item, comp_nterm);
+    int val = find_ptr_list_idx((pointer_list_t*)lst, item, comp_nterm);
     if(val >= 0)
         retv = lst->buffer[val];
 

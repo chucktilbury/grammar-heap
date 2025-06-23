@@ -22,8 +22,13 @@ string_t* strbuf = NULL;
 %%
 
 "%pretext"  { return PRETEXT; }
+"%posttext" { return POSTTEXT; }
 "%precode"  { return PRECODE; }
-"%postcode"  { return POSTCODE; }
+"%postcode" { return POSTCODE; }
+"%term_def" { return TERM_DEF; }
+"%nterm_def" { return NTERM_DEF; }
+"%provides" { return PROVIDES; }
+"%requires" { return REQUIRES; }
 
 "+" { return PLUS; }
 "*" { return STAR; }

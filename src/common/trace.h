@@ -13,7 +13,6 @@
 
 #ifdef USE_TRACE
 #include <stdio.h>
-#include <stdlib.h>
 
 // defined in trace.c
 extern int trace_depth;
@@ -23,7 +22,6 @@ static int local_verbosity = 0;
     do { \
         if(local_verbosity < peek_trace_verbosity()) { \
             print_indent(__VA_ARGS__); \
-            fputc('\n', get_trace_handle()); \
         } \
     } while(0)
 

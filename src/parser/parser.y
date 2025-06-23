@@ -52,7 +52,8 @@ extern int errors;
 };
 
 %token PLUS STAR QUESTION PIPE OPAREN CPAREN
-%token OCBRACE CCBRACE PRETEXT PRECODE POSTCODE
+%token PRETEXT PRECODE POSTCODE POSTTEXT
+%token PROVIDES REQUIRES TERM_DEF NTERM_DEF
 %token<token> TERMINAL_SYMBOL TERMINAL_KEYWORD TERMINAL_OPER
 %token<token> CODE_BLOCK NON_TERMINAL
 
@@ -105,6 +106,11 @@ directive
         $$->type = PRETEXT;
         $$->code = $2;
     }
+    | POSTTEXT CODE_BLOCK {
+        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$->type = POSTTEXT;
+        $$->code = $2;
+    }
     | PRECODE CODE_BLOCK {
         $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
         $$->type = PRECODE;
@@ -115,7 +121,26 @@ directive
         $$->type = POSTCODE;
         $$->code = $2;
     }
-
+    | PROVIDES CODE_BLOCK {
+        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$->type = PROVIDES;
+        $$->code = $2;
+    }
+    | REQUIRES CODE_BLOCK {
+        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$->type = REQUIRES;
+        $$->code = $2;
+    }
+    | TERM_DEF CODE_BLOCK {
+        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$->type = TERM_DEF;
+        $$->code = $2;
+    }
+    | NTERM_DEF CODE_BLOCK {
+        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$->type = NTERM_DEF;
+        $$->code = $2;
+    }
     ;
 
 grammar_rule
@@ -209,7 +234,7 @@ zero_or_more_function
             code_allowed = 1;
         }
         else
-            yyerror("unexpected STAR");
+            yyerror("syntax error, unexpected STAR");
     }
     ;
 
@@ -221,7 +246,7 @@ zero_or_one_function
             code_allowed = 1;
         }
         else
-            yyerror("unexpected QUESTION");
+            yyerror("syntax error, unexpected QUESTION");
     }
     ;
 
@@ -233,7 +258,7 @@ one_or_more_function
             code_allowed = 1;
         }
         else
-            yyerror("unexpected PLUS");
+            yyerror("syntax error, unexpected PLUS");
     }
     ;
 
@@ -268,7 +293,7 @@ inline_code
             code_allowed = 0;
         }
         else
-            yyerror("unexpected CODE_BLOCK");
+            yyerror("syntax error, unexpected CODE_BLOCK");
     }
     ;
 

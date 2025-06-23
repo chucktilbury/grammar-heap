@@ -4,7 +4,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "ast.h"
+//#include "ast.h"
 #include "scanner.h"
 #include "parser.h"
 //#include "ast.h"
@@ -42,8 +42,6 @@ int main(int argc, char** argv, char** env) {
 
     make_raw_lists();
     //traverse_ast(root_node);
-
-    create_table_pass1();
 
     dump_master_list();
 

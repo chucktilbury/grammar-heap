@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "cmdline.h"
 #include "alloc.h"
@@ -690,6 +689,23 @@ void cmdline_vers(void) {
     show_cmdline_vers();
     exit(1);
 }
+
+int in_cmd_list(const char* name, const char* item) {
+
+    int retv = 0;
+    int mark = 0;
+    string_t* str;
+
+    while(NULL != (str = iterate_cmd_opt(name, &mark))) {
+        if(!comp_string_str(str, item)) {
+            retv++;
+            break;
+        }
+    }
+
+    return retv;
+}
+
 
 #ifdef TEST_COMMAND_LINE
 // build string:
