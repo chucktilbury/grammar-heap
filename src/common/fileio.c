@@ -78,16 +78,19 @@ static void add_env(const char* str) {
 static void add_dirs(const char* dname) {
 
     char* tmp = NULL;
+    struct stat s;
 
     tmp = (char*)get_path(dname);
     strcat(tmp, "/*");
     glob_t gstruct;
-    glob(tmp, GLOB_ONLYDIR, NULL, &gstruct);
+    glob(tmp, GLOB_NOSORT|GLOB_NOESCAPE, NULL, &gstruct);
 
     // printf("paths: %lu\n", gstruct.gl_pathc);
     for(size_t i = 0; i < gstruct.gl_pathc; i++) {
         // printf("%d. %s\n", i+1, gstruct.gl_pathv[i]);
-        append_ptr_list(common_env, create_string(gstruct.gl_pathv[i]));
+        stat(gstruct.gl_pathv[i], &s);
+        if(s.st_mode & S_IFDIR)
+            append_ptr_list(common_env, create_string(gstruct.gl_pathv[i]));
     }
 }
 
@@ -112,7 +115,7 @@ static void setup_env(void) {
 
     common_env = create_string_list();
 
-    add_env("TOY_PATH");
+    add_env("PGEN_PATH");
     add_dirs("..");
     add_env("PATH");
 }

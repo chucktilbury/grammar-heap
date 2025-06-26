@@ -21,15 +21,16 @@ typedef struct {
     string_t* nterm;
     string_t* type;
     ast_node_t* node;
+    int ref_count;
 } nterm_item_t;
 
 nterm_list_t* create_nterm_list(void);
-void destroy_nterm_list(nterm_list_t* lst);
-void append_nterm_list(nterm_list_t* lst, nterm_item_t* item);
-nterm_item_t* iterate_nterm_list(nterm_list_t* lst, int* mark);
-nterm_item_t* index_nterm_list(nterm_list_t* lst, int idx);
-void sort_nterm_list(nterm_list_t* lst);
-nterm_item_t* find_nterm(nterm_list_t* lst, const char* name);
+void destroy_nterm_list(void);
+void append_nterm_list(nterm_item_t* item);
+nterm_item_t* iterate_nterm_list(int* mark);
+nterm_item_t* index_nterm_list(int idx);
+void sort_nterm_list(void);
+nterm_item_t* find_nterm(string_t* name);
 
 nterm_item_t* create_nterm_item(string_t* nterm, string_t* type, ast_node_t* node);
 void destroy_nterm_item(nterm_item_t* item);

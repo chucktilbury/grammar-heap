@@ -24,18 +24,18 @@ token_t* create_token(const char* str, int type) {
 
     switch(type) {
         case TERMINAL_SYMBOL: {
-            tok->ptype = create_string_fmt("TOK_%s", str);
+            tok->ptype = create_string_fmt("TERM_%s", str);
         } break;
 
         case TERMINAL_KEYWORD: {
-            string_t* tmp = create_string_fmt("TOK_%s", str);
+            string_t* tmp = create_string_fmt("TERM_%s", str);
             strip_char(tmp, '\'');
             upcase(tmp);
             tok->ptype = tmp;
         } break;
 
         case TERMINAL_OPER: {
-            string_t* tmp = create_string_fmt("TOK_%s", str);
+            string_t* tmp = create_string_fmt("TERM_%s", str);
             strip_char(tmp, '\'');
             tok->ptype = convert(tmp);
             destroy_string(tmp);

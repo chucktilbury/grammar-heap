@@ -16,18 +16,18 @@
 #include "tokens.h"
 
 typedef enum {
-    AST_GRAMMAR,
-    AST_GRAMMAR_LIST,
-    AST_GRAMMAR_RULE,
-    AST_RULE_ELEMENT_LIST,
-    AST_RULE_ELEMENT,
-    AST_OR_FUNCTION,
-    AST_ZERO_OR_MORE_FUNCTION,
-    AST_ZERO_OR_ONE_FUNCTION,
-    AST_ONE_OR_MORE_FUNCTION,
-    AST_GROUPING_FUNCTION,
-    AST_DIRECTIVE,
-    AST_INLINE_CODE,
+    NTERM_GRAMMAR,
+    NTERM_GRAMMAR_LIST,
+    NTERM_GRAMMAR_RULE,
+    NTERM_RULE_ELEMENT_LIST,
+    NTERM_RULE_ELEMENT,
+    NTERM_OR_FUNCTION,
+    NTERM_ZERO_OR_MORE_FUNCTION,
+    NTERM_ZERO_OR_ONE_FUNCTION,
+    NTERM_ONE_OR_MORE_FUNCTION,
+    NTERM_GROUPING_FUNCTION,
+    NTERM_DIRECTIVE,
+    NTERM_INLINE_CODE,
 } ast_type_t;
 
 typedef struct
@@ -179,7 +179,7 @@ typedef struct _inline_code_t_ {
 } inline_code_t;
 
 ast_node_t* create_ast_node(ast_type_t type);
-void traverse_ast(grammar_t* node);
+void traverse_ast(void);
 
 ast_node_list_t* create_ast_node_list(void);
 void append_ast_node_list(ast_node_list_t* lst, ast_node_t* ptr);

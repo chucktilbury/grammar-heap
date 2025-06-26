@@ -99,8 +99,6 @@ static void show_cmdline_help(void) {
                 strcat(tmp, "strg] ");
             else if(ptr->type & CMD_NUM)
                 strcat(tmp, "num]  ");
-            // else if(ptr->type & CMD_SWITCH)
-            //     strcat(tmp, "sw]   ");
             else
                 strcat(tmp, "sw]   ");
             printf("%s", tmp);
@@ -305,20 +303,6 @@ static void add_cmdline_arg(cmdline_entry_t* item, const char* str) {
             append_string_list(item->value, create_string(str));
         }
     }
-    // if((item->type & CMD_LIST) && (item->value != NULL)) {
-    //     append_string_list(item->value, create_string(str));
-    // }
-    // else if(item->value != NULL) {
-    //     int mark = 0;
-    //     string_t* s = iterate_string_list(item->value, &mark); // get the first item.
-    //     clear_string(s);
-    //     append_string(s, str);
-    // }
-    // else {
-    //     item->value = split_string(str, ':');
-    //     // item->value = create_string_list();
-    //     // append_string_list(item->value, create_string(str));
-    // }
 }
 
 /*
@@ -375,7 +359,6 @@ static void parse_short_option(const char* str) {
             item->type |= CMD_SEEN;
             if(item->type & CMD_ARGS) {
                 if(str[idx + 1] == '=' && str[idx + 2] != '\0') {
-                    printf("here\n");
                     add_cmdline_arg(item, &str[idx + 2]);
                     consume_cmd();
                     return;

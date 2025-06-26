@@ -6,6 +6,65 @@ These notes help me organize my thoughts.
 ## States in terms of an actual rule.
 This is an attempt to describe who the first pass state machine generator will work.
 
+----------
+
+When this grammar is processed it is reduced to contain only terminal symbols. Each terminal has a state and that state is referred to by a match or a no-match to the symbol of the previous state.
+
+This grammar:
+
+```
+start ( a | b )
+a ( 'asd' | 'qwe' )*
+b ( '123' | '098' )
+```
+Reduces to the string
+```
+(('asd'|'qwe')*|('123'|'098'))
+```
+where all non-terminals have been factored out but the functions are still present. It is TBD how to actually create the states and the state machine of this grammar is ambiguous. The ambiguity must be handled in a way that is predictable and makes sense. Each terminal can be numbered. The state transition is determined by the match or no-match of each terminal. Also the error transition. This happens when a path through the graph cannot be found from the present location for the current token. That produces a "expected but got" syntax error.
+
+Create a grammar like this one:
+```
+; a completely recursive grammar
+start (expr+ {})
+
+; the order of the elements establishes the precedence.
+expr (
+    sum {} |
+    factor {} |
+    primary {}
+)
+
+sum (
+    ((expr '+' expr) {}) |
+    ((expr '-' expr) {})
+)
+
+factor (
+    ((expr '*' expr) {}) |
+    ((expr '/' expr) {})
+)
+
+primary (
+    NUMBER |
+    '(' expr ')'
+)
+```
+When this grammar is processed it is reduced to contain only terminal symbols, but recursive rules will always "blow up" because it is replaced with itself. Therefore a recursive rule has to be implemented iteratively.
+
+The reduction process looks like this:
+```
+start ( expr+ {} )
+( expr+ {} )
+((( sum | factor | primary )+ {}) {})
+(((((expr '+' expr){} | (expr '-' expr){})|factor{}|primary{}))
+```
+... and so on. The "expr" term is never factored out.
+
+So to factor it out iteratively, first the grammar needs to be scanned for recursive rules. A recursive rule is any rule that calls itself, either directly or indirectly. When deducing the grammar to its terminal states, when a recursive rule is begun to be factored, it's state is pushed on a stack. When the rule is referred to it's state is used as the "match" edge of the graph. When the rule is finished being factored, then it is popped off of the stack. If a recursive rule is referred to without being on the stack then that is an error in the grammar,
+
+The code blocks in the grammar are treated exactly like terminals except that they always "match".
+
 -----------
 
 ## Another approach

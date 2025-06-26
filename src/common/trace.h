@@ -11,8 +11,19 @@
 #ifndef _TRACE_H_
 #define _TRACE_H_
 
-#ifdef USE_TRACE
 #include <stdio.h>
+
+#define INIT_TRACE(fh) init_trace(fh)
+
+#define MSG(n, ...) \
+    do { \
+        if((n) < peek_trace_verbosity()) \
+            fprintf(get_trace_handle(), __VA_ARGS__); \
+    } while(0)
+
+void init_trace(FILE* fp);
+
+#ifdef USE_TRACE
 
 // defined in trace.c
 extern int trace_depth;
@@ -56,21 +67,19 @@ static int local_verbosity = 0;
         } \
     } while(0)
 
-#define HEADER \
+#define TRACE_HEADER \
     do { \
         reset_trace_depth(0); \
         SEPARATOR; \
-        PRINT("\t%s", __func__); \
+        PRINT("\t%s\n", __func__); \
         SEPARATOR; \
     } while(0)
 
-#define INIT_TRACE(fh) init_trace(fh)
 #define PUSH_TRACE_VERBOSITY(n) push_trace_verbosity(n)
 #define POP_TRACE_VERBOSITY() pop_trace_verbosity()
 #define PEEK_TRACE_VERBOSITY() peek_trace_verbosity()
 #define LOCAL_VERBOSITY(n) local_verbosity = (n)
 
-void init_trace(FILE* fp);
 void reset_trace_depth(int val);
 void push_trace_verbosity(int num);
 void pop_trace_verbosity(void);
@@ -83,6 +92,7 @@ void print_return(const char* file, int line, const char* func, const char* str)
 
 #else
 
+#define MSG(n, ...)
 #define TRACE(...)
 #define ENTER
 #define RETURN(...)         \
@@ -90,14 +100,13 @@ void print_return(const char* file, int line, const char* func, const char* str)
         return __VA_ARGS__; \
     } while(0)
 #define SEPARATOR
-#define INIT_TRACE(fh)
 #define PUSH_TRACE_VERBOSITY(n)
 #define POP_TRACE_VERBOSITY()
 #define PEEK_TRACE_VERBOSITY()
 #define PRINT_INDENT(...)
 #define PRINT_TRACE(...)
 #define LOCAL_VERBOSITY(n)
-#define HEADER
+#define TRACE_HEADER
 
 #endif
 

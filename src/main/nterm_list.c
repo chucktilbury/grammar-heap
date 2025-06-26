@@ -14,37 +14,40 @@
 #include "pointer_list.h"
 //#include "string_list.h"
 //#include "nterm_rules.h"
+#include "master_list.h"
 
 nterm_list_t* create_nterm_list(void) {
 
     return (nterm_list_t*)create_ptr_list();
 }
 
-void destroy_nterm_list(nterm_list_t* lst) {
+void destroy_nterm_list(void) {
+
+    nterm_list_t* lst = get_master_list()->nterm_list;
 
     if(lst != NULL) {
         nterm_item_t* item;
         int mark = 0;
-        while(NULL != (item = iterate_nterm_list(lst, &mark)))
+        while(NULL != (item = iterate_nterm_list(&mark)))
             destroy_nterm_item(item);
 
         destroy_ptr_list((pointer_list_t*)lst);
     }
 }
 
-void append_nterm_list(nterm_list_t* lst, nterm_item_t* item) {
+void append_nterm_list(nterm_item_t* item) {
 
-    append_ptr_list((pointer_list_t*)lst, (void*)item);
+    append_ptr_list(get_master_list()->nterm_list, (void*)item);
 }
 
-nterm_item_t* iterate_nterm_list(nterm_list_t* lst, int* mark) {
+nterm_item_t* iterate_nterm_list(int* mark) {
 
-    return (nterm_item_t*)iterate_ptr_list((pointer_list_t*)lst, mark);
+    return (nterm_item_t*)iterate_ptr_list(get_master_list()->nterm_list, mark);
 }
 
-nterm_item_t* index_nterm_list(nterm_list_t* lst, int idx) {
+nterm_item_t* index_nterm_list(int idx) {
 
-    return (nterm_item_t*)index_ptr_list((pointer_list_t*)lst, idx);
+    return (nterm_item_t*)index_ptr_list(get_master_list()->nterm_list, idx);
 }
 
 nterm_item_t* create_nterm_item(string_t* nterm, string_t* type, ast_node_t* node) {
@@ -72,24 +75,17 @@ static int comp_nterm(void* p1, void* p2) {
     return comp_string(((nterm_item_t*)p1)->nterm, ((nterm_item_t*)p2)->nterm);
 }
 
-void sort_nterm_list(nterm_list_t* lst) {
+void sort_nterm_list(void) {
 
-    sort_ptr_list((pointer_list_t*)lst, comp_nterm);
+    sort_ptr_list(get_master_list()->nterm_list, comp_nterm);
 }
 
 // using the nterm or the type creates the same result
-nterm_item_t* find_nterm(nterm_list_t* lst, const char* str) {
+nterm_item_t* find_nterm(string_t* str) {
 
-    string_t* ptr = create_string(str);
-    nterm_item_t* item = create_nterm_item(ptr, ptr, NULL);
+    nterm_item_t item;
+    item.nterm = str;
 
-    nterm_item_t* retv = NULL;
-    int val = find_ptr_list_idx((pointer_list_t*)lst, item, comp_nterm);
-    if(val >= 0)
-        retv = lst->buffer[val];
-
-    destroy_string(ptr);
-    _FREE(item);
-    return retv;
+    return find_ptr_list(get_master_list()->nterm_list, &item, comp_nterm);
 }
 

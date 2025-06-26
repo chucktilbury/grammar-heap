@@ -4,11 +4,11 @@
 
 #include "tokens.h"
 #include "ast.h"
+#include "master_list.h"
 
 int yylex(void);
 void yyerror(const char*);
 extern int yylineno;
-grammar_t* root_node;
 int errors = 0;
 
 // This exists because having some functions appearing after a code block
@@ -31,6 +31,7 @@ int code_allowed = 0;
 // this goes at the bottom of the generated header file.
 %code provides {
 const char* token_to_str(int);
+void init_parser(void);
 extern grammar_t* root_node;
 extern int errors;
 }
@@ -84,14 +85,15 @@ extern int errors;
 
 grammar
     : grammar_list {
-        root_node = $$ = (grammar_t*)create_ast_node(AST_GRAMMAR);
+        $$ = (grammar_t*)create_ast_node(NTERM_GRAMMAR);
+        set_root_node($$);
         $$->grammar_list = $1;
     }
     ;
 
 grammar_list
     : grammar_rule  {
-        $$ = (grammar_list_t*)create_ast_node(AST_GRAMMAR_LIST);
+        $$ = (grammar_list_t*)create_ast_node(NTERM_GRAMMAR_LIST);
         $$->list = create_ast_node_list();
         append_ast_node_list($$->list, (ast_node_t*)$1);
     }
@@ -102,42 +104,42 @@ grammar_list
 
 directive
     : PRETEXT CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = PRETEXT;
         $$->code = $2;
     }
     | POSTTEXT CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = POSTTEXT;
         $$->code = $2;
     }
     | PRECODE CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = PRECODE;
         $$->code = $2;
     }
     | POSTCODE CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = POSTCODE;
         $$->code = $2;
     }
     | PROVIDES CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = PROVIDES;
         $$->code = $2;
     }
     | REQUIRES CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = REQUIRES;
         $$->code = $2;
     }
     | TERM_DEF CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = TERM_DEF;
         $$->code = $2;
     }
     | NTERM_DEF CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(AST_DIRECTIVE);
+        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
         $$->type = NTERM_DEF;
         $$->code = $2;
     }
@@ -145,7 +147,7 @@ directive
 
 grammar_rule
     : NON_TERMINAL grouping_function {
-        $$ = (grammar_rule_t*)create_ast_node(AST_GRAMMAR_RULE);
+        $$ = (grammar_rule_t*)create_ast_node(NTERM_GRAMMAR_RULE);
         $$->NON_TERMINAL = $1;
         $$->grouping_function = $2;
         $$->directive = NULL;
@@ -153,7 +155,7 @@ grammar_rule
         code_allowed = 1;
     }
     | directive {
-        $$ = (grammar_rule_t*)create_ast_node(AST_GRAMMAR_RULE);
+        $$ = (grammar_rule_t*)create_ast_node(NTERM_GRAMMAR_RULE);
         $$->NON_TERMINAL = NULL;
         $$->grouping_function = NULL;
         $$->directive = $1;
@@ -164,7 +166,7 @@ grammar_rule
 
 rule_element_list
     : rule_element {
-        $$ = (rule_element_list_t*)create_ast_node(AST_RULE_ELEMENT_LIST);
+        $$ = (rule_element_list_t*)create_ast_node(NTERM_RULE_ELEMENT_LIST);
         $$->list = create_ast_node_list();
         append_ast_node_list($$->list, (ast_node_t*)$1);
     }
@@ -175,53 +177,53 @@ rule_element_list
 
 rule_element
     : NON_TERMINAL {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->token = $1;
         func_allowed = 1;
         code_allowed = 1;
     }
     | TERMINAL_KEYWORD {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         //strip_quotes($1->str);
         $$->token = $1;
         func_allowed = 1;
         code_allowed = 1;
     }
     | TERMINAL_OPER {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         //strip_quotes($1->str);
         $$->token = $1;
         func_allowed = 1;
         code_allowed = 1;
     }
     | TERMINAL_SYMBOL {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->token = $1;
         func_allowed = 1;
         code_allowed = 1;
     }
     | or_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->nterm = (ast_node_t*)$1;
     }
     | zero_or_more_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->nterm = (ast_node_t*)$1;
     }
     | zero_or_one_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->nterm = (ast_node_t*)$1;
     }
     | one_or_more_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->nterm = (ast_node_t*)$1;
     }
     | grouping_function {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->nterm = (ast_node_t*)$1;
     }
     | inline_code {
-        $$ = (rule_element_t*)create_ast_node(AST_RULE_ELEMENT);
+        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
         $$->nterm = (ast_node_t*)$1;
     }
     ;
@@ -229,7 +231,7 @@ rule_element
 zero_or_more_function
     : rule_element STAR {
         if(func_allowed) {
-            $$ = (zero_or_more_function_t*)create_ast_node(AST_ZERO_OR_MORE_FUNCTION);
+            $$ = (zero_or_more_function_t*)create_ast_node(NTERM_ZERO_OR_MORE_FUNCTION);
             $$->rule_element = $1;
             code_allowed = 1;
         }
@@ -241,7 +243,7 @@ zero_or_more_function
 zero_or_one_function
     : rule_element QUESTION {
         if(func_allowed) {
-            $$ = (zero_or_one_function_t*)create_ast_node(AST_ZERO_OR_ONE_FUNCTION);
+            $$ = (zero_or_one_function_t*)create_ast_node(NTERM_ZERO_OR_ONE_FUNCTION);
             $$->rule_element = $1;
             code_allowed = 1;
         }
@@ -253,7 +255,7 @@ zero_or_one_function
 one_or_more_function
     : rule_element PLUS {
         if(func_allowed) {
-            $$ = (one_or_more_function_t*)create_ast_node(AST_ONE_OR_MORE_FUNCTION);
+            $$ = (one_or_more_function_t*)create_ast_node(NTERM_ONE_OR_MORE_FUNCTION);
             $$->rule_element = $1;
             code_allowed = 1;
         }
@@ -267,7 +269,7 @@ or_function
         func_allowed = 0;
         code_allowed = 0;
     } rule_element {
-        $$ = (or_function_t*)create_ast_node(AST_OR_FUNCTION);
+        $$ = (or_function_t*)create_ast_node(NTERM_OR_FUNCTION);
         $$->left = $1;
         $$->right = $4;
         func_allowed = 1;
@@ -277,7 +279,7 @@ or_function
 
 grouping_function
     : OPAREN rule_element_list CPAREN {
-        $$ = (grouping_function_t*)create_ast_node(AST_GROUPING_FUNCTION);
+        $$ = (grouping_function_t*)create_ast_node(NTERM_GROUPING_FUNCTION);
         $$->rule_element_list = $2;
         func_allowed = 1;
         code_allowed = 1;
@@ -287,7 +289,7 @@ grouping_function
 inline_code
     : CODE_BLOCK {
         if(code_allowed) {
-            $$ = (inline_code_t*)create_ast_node(AST_INLINE_CODE);
+            $$ = (inline_code_t*)create_ast_node(NTERM_INLINE_CODE);
             $$->code = $1;
             func_allowed = 0;
             code_allowed = 0;
@@ -298,6 +300,14 @@ inline_code
     ;
 
 %%
+
+#include <string.h>
+#include <errno.h>
+#include "cmdline.h"
+#include "trace.h"
+#include "errors.h"
+
+extern FILE* yyin;
 
 void yyerror(const char* s) {
 
@@ -310,3 +320,23 @@ const char* token_to_str(int tok) {
     return yysymbol_name(YYTRANSLATE(tok));
 }
 
+void init_parser(void) {
+
+    if(in_cmd_list("dump", "parser"))
+        LOCAL_VERBOSITY(0);
+    else
+        LOCAL_VERBOSITY(19);
+
+    TRACE_HEADER;
+
+    const char* fname = raw_string(get_cmd_opt("files"));
+    if(fname != NULL) {
+        yyin = fopen(fname, "r");
+        if(yyin == NULL) {
+            fprintf(stderr, "cannot open input file \"%s\": %s\n", fname, strerror(errno));
+            cmdline_help();
+        }
+    }
+    else
+        FATAL("internal error in %s: parse command line failed", __func__);
+}
