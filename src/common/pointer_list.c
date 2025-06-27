@@ -117,7 +117,7 @@ void sort_ptr_list(pointer_list_t* lst, int (*comp_func)(void*, void*)) {
 }
 
 // binary search
-int find_ptr_list(pointer_list_t* lst, void* key, int (*comp_func)(void*, void*)) {
+int find_ptr_list_idx(pointer_list_t* lst, void* key, int (*comp_func)(void*, void*)) {
 
     if(!lst->is_sorted)
         return -1;
@@ -140,6 +140,16 @@ int find_ptr_list(pointer_list_t* lst, void* key, int (*comp_func)(void*, void*)
 
     // not found
     return -1;
+}
+
+void* find_ptr_list(pointer_list_t* lst, void* key, int (*comp_func)(void*, void*)) {
+
+    int idx = find_ptr_list_idx(lst, key, comp_func);
+
+    if(idx >= 0)
+        return index_ptr_list(lst, idx);
+    else
+        return NULL;
 }
 
 /*

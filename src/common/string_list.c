@@ -63,7 +63,7 @@ void sort_string_list(string_list_t* lst) {
 
 int find_string_list(string_list_t* lst, string_t* key) {
 
-    return find_ptr_list((pointer_list_t*)lst, (void*)key, comp_func);
+    return find_ptr_list_idx((pointer_list_t*)lst, (void*)key, comp_func);
 }
 
 

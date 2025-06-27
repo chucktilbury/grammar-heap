@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "cmdline.h"
 #include "alloc.h"
@@ -360,7 +359,6 @@ static void parse_short_option(const char* str) {
             item->type |= CMD_SEEN;
             if(item->type & CMD_ARGS) {
                 if(str[idx + 1] == '=' && str[idx + 2] != '\0') {
-                    //printf("here\n");
                     add_cmdline_arg(item, &str[idx + 2]);
                     consume_cmd();
                     return;

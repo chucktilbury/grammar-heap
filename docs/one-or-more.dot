@@ -1,0 +1,18 @@
+digraph X {
+
+label="One-Or-More-Function\nSelect a list of items where at least one is required.\n"
+labelloc="t"
+//rankdir="LR"
+
+"START" -> "rule_element_1"
+
+"rule_element_1" -> "rule_element_N" [label="match"]
+"rule_element_1" -> "NO ITEM" [label="no match"]
+
+"rule_element_N" -> "rule_element_N" [label="match"]
+"rule_element_N" -> "HAVE ITEM" [label="no match"]
+
+"NO ITEM" -> "REJECT"
+"HAVE ITEM" -> "ACCEPT"
+
+}

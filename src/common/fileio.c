@@ -15,7 +15,7 @@
 #include <errno.h>
 #include <glob.h>
 #include <sys/stat.h>
-#include <linux/limits.h>
+#include <limits.h>
 
 #include "string_list.h"
 #include "alloc.h"
@@ -26,7 +26,7 @@
 
 static const char* base_file_name = NULL;
 static string_list_t* common_env = NULL;
-static char buffer[PATH_MAX]; // returning a pointer to this
+static char buffer[_POSIX_PATH_MAX]; // returning a pointer to this
 
 /**
  * @brief Handle errors around realpath().
@@ -78,16 +78,19 @@ static void add_env(const char* str) {
 static void add_dirs(const char* dname) {
 
     char* tmp = NULL;
+    struct stat s;
 
     tmp = (char*)get_path(dname);
     strcat(tmp, "/*");
     glob_t gstruct;
-    glob(tmp, GLOB_ONLYDIR, NULL, &gstruct);
+    glob(tmp, GLOB_NOSORT|GLOB_NOESCAPE, NULL, &gstruct);
 
     // printf("paths: %lu\n", gstruct.gl_pathc);
     for(size_t i = 0; i < gstruct.gl_pathc; i++) {
         // printf("%d. %s\n", i+1, gstruct.gl_pathv[i]);
-        append_ptr_list(common_env, create_string(gstruct.gl_pathv[i]));
+        stat(gstruct.gl_pathv[i], &s);
+        if(s.st_mode & S_IFDIR)
+            append_ptr_list(common_env, create_string(gstruct.gl_pathv[i]));
     }
 }
 
@@ -112,7 +115,7 @@ static void setup_env(void) {
 
     common_env = create_string_list();
 
-    add_env("TOY_PATH");
+    add_env("PGEN_PATH");
     add_dirs("..");
     add_env("PATH");
 }
@@ -132,7 +135,7 @@ const char* find_file(const char* fname) {
     // add the ".toy" on the end if it was not specified
     char* tmp_name = strrchr(fname, '.');
     if(NULL == tmp_name || strcmp(tmp_name, ".toy")) {
-        tmp_name = _ALLOC(PATH_MAX);
+        tmp_name = _ALLOC(_POSIX_PATH_MAX);
         strcpy(tmp_name, fname);
         strcat(tmp_name, ".toy");
     }
@@ -148,7 +151,7 @@ const char* find_file(const char* fname) {
     string_t* s;
 
     while(NULL != (s = iterate_string_list(common_env, &mark))) {
-        strncpy(buffer, raw_string(s), PATH_MAX);
+        strncpy(buffer, raw_string(s), _POSIX_PATH_MAX);
         strcat(buffer, "/");
         strcat(buffer, tmp_name);
 

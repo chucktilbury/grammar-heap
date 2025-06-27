@@ -3,11 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ast.h"
-#include "cmdline.h"
-#include "trace.h"
-#include "master_list.h"
 #include "parser.h"
+#include "cmdline.h"
+#include "master_list.h"
+#include "trace.h"
 
 int find_dumper(const char* name) {
 
@@ -33,21 +32,23 @@ int main(int argc, char** argv, char** env) {
 
     cmdline(argc, argv, env);
 
-    // defined in parse.y
     init_master_list();
     init_parser();
+
     yyparse();
 
     if(errors > 0)
         return errors;
 
-    if(find_dumper("ast"))
-        traverse_ast();
+    make_raw_lists();
 
-    create_master_list();
+    if(find_dumper("ast")) {
+        traverse_ast();
+    }
 
     if(find_dumper("master"))
         dump_master_list();
 
     return 0;
 }
+

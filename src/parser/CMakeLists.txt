@@ -19,11 +19,14 @@ FLEX_TARGET(SCANNER
 
 ADD_FLEX_BISON_DEPENDENCY(SCANNER PARSER)
 
+file(GLOB_RECURSE ${PROJECT_NAME}_files
+    ${PROJECT_SOURCE_DIR}/*.c
+)
+
 add_library(${PROJECT_NAME} STATIC
     ${BISON_PARSER_OUTPUTS}
     ${FLEX_SCANNER_OUTPUTS}
-    ast.c
-    tokens.c
+    ${${PROJECT_NAME}_files}
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -31,8 +34,9 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/../common
-        ${PROJECT_SOURCE_DIR}/../parser
         ${PROJECT_SOURCE_DIR}/../main
+        ${PROJECT_SOURCE_DIR}/../parser
+        ${PROJECT_SOURCE_DIR}/../gc
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE

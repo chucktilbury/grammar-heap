@@ -1,6 +1,5 @@
 %{
 
-#include "ast.h"
 #include "tokens.h"
 #include "parser.h"
 #include "string_buffer.h"
@@ -22,47 +21,21 @@ string_t* strbuf = NULL;
 
 %%
 
-"%pretext"  {
-    //yylval.terminal = create_token(yytext, PRETEXT);
-    yylval.token = create_token(yytext, TERM_PRETEXT);
-    return PRETEXT;
-}
+"%pretext"  { return PRETEXT; }
+"%posttext" { return POSTTEXT; }
+"%precode"  { return PRECODE; }
+"%postcode" { return POSTCODE; }
+"%term_def" { return TERM_DEF; }
+"%nterm_def" { return NTERM_DEF; }
+"%provides" { return PROVIDES; }
+"%requires" { return REQUIRES; }
 
-"%precode"  {
-    //yylval.terminal = create_token(yytext, PRECODE);
-    yylval.token = create_token(yytext, TERM_PRECODE);
-    return PRECODE;
-}
-
-"%postcode"  {
-    //yylval.terminal = create_token(yytext, POSTCODE);
-    yylval.token = create_token(yytext, TERM_POSTCODE);
-    return POSTCODE;
-}
-
-"%header" {
-    //yylval.terminal = create_token(yytext, HEADER);
-    yylval.token = create_token(yytext, TERM_HEADER);
-    return HEADERCODE;
-}
-
-"%error" {
-    //yylval.terminal = create_token(yytext, ERROR);
-    yylval.token = create_token(yytext, TERM_ERROR);
-    return ERROR;
-}
-
-"%list" {
-    //yylval.terminal = create_token(yytext, LIST);
-    yylval.token = create_token(yytext, TERM_LIST);
-    return LIST;
-}
-
-";" { return ';'; }
-"|" { return '|'; }
-":" { return ':'; }
-"(" { return '('; }
-")" { return ')'; }
+"+" { return PLUS; }
+"*" { return STAR; }
+"?" { return QUESTION; }
+"|" { return PIPE; }
+"(" { return OPAREN; }
+")" { return CPAREN; }
 
 "{" {
     depth = 0;
@@ -94,33 +67,28 @@ string_t* strbuf = NULL;
     }
     else {
         BEGIN(INITIAL);
-        //yylval.terminal = create_token(raw_string(strbuf), CODE_BLOCK);
-        yylval.token = create_token(raw_string(strbuf), TERM_CODE_BLOCK);
+        yylval.token = create_token(raw_string(strbuf), CODE_BLOCK);
         return CODE_BLOCK;
     }
 }
 
 [a-z_][a-z0-9_]* {
-    //yylval.terminal = create_token(yytext, NON_TERMINAL);
-    yylval.token = create_token(yytext, TERM_NON_TERMINAL);
+    yylval.token = create_token(yytext, NON_TERMINAL);
     return NON_TERMINAL;
 }
 
 [A-Z_][A-Z0-9_]* {
-    //yylval.terminal = create_token(yytext, TERMINAL_SYMBOL);
-    yylval.token = create_token(yytext, TERM_TERMINAL_SYMBOL);
-    return TERMINAL_SYMBOL;
+    yylval.token = create_token(yytext, TERMINAL_SYMBOL);
+    return TERMINAL_SYMBOL; \
 }
 
 \'[a-zA-Z_][a-zA-Z0-9_]*\' {
-    //yylval.terminal = create_token(yytext, TERMINAL_KEYWORD);
-    yylval.token = create_token(yytext, TERM_TERMINAL_KEYWORD);
+    yylval.token = create_token(yytext, TERMINAL_KEYWORD);
     return TERMINAL_KEYWORD;
 }
 
 \'[^a-zA-Z0-9_\']+\' {
-    //yylval.terminal = create_token(yytext, TERMINAL_OPER);
-    yylval.token = create_token(yytext, TERM_TERMINAL_OPER);
+    yylval.token = create_token(yytext, TERMINAL_OPER);
     return TERMINAL_OPER;
 }
 
@@ -129,4 +97,3 @@ string_t* strbuf = NULL;
 [ \t\r\n\v\f]* { /* ignore whitespace */ }
 
 %%
-

@@ -1,4 +1,4 @@
-# grammar-heap
+# pgen
 Top-down parser generator that uses a FSM instead of LALR tables or recursive decent. The data structure that it uses to implement the generated parser is a heap.
 
 This uses Bison and Flex to parse a grammar which is composed of simple regular expressions. The parser that is generated uses a single finite state machine to pars the input based upon the grammar. Since it is not recursive, it has no problem with left recursion and any grammer that you can represent with this syntax should be parsable. 
@@ -153,6 +153,7 @@ rule_element (
     zero_or_more_function |
     zero_or_one_function |
     grouping_function |
+    code_block
 )
 
 or_function (
@@ -172,7 +173,7 @@ zero_or_one_function (
 )
 
 grouping_function (
-    OPAREN rule_element+ CPAREN code_block
+    OPAREN rule_element+ CPAREN
 )
 
 # Greedy expression consumes all of the text up untill the {} match.

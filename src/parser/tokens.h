@@ -12,31 +12,16 @@
 #define _TOKENS_H_
 
 #include "string_buffer.h"
-#define TERM_START  200
-
-typedef enum {
-    TERM_PRETEXT = TERM_START,
-    TERM_PRECODE,
-    TERM_POSTCODE,
-    TERM_ERROR,
-    TERM_LIST,
-    TERM_HEADER,
-    TERM_TERMINAL_SYMBOL,
-    TERM_TERMINAL_KEYWORD,
-    TERM_TERMINAL_OPER,
-    TERM_CODE_BLOCK,
-    TERM_NON_TERMINAL,
-} ast_term_type_t;
 
 typedef struct {
+    string_t* str;
+    string_t* ptype;
     int type;
-    string_t* raw_str;
-    string_t* type_str;
     int line_no;
 } token_t;
 
 token_t* create_token(const char* str, int type);
 void destroy_token(token_t* tok);
-const char* tok_to_str(token_t* tok);
+const char* tok_to_str(int type);
 
 #endif /* _TOKENS_H_ */
