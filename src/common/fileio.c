@@ -15,7 +15,7 @@
 #include <errno.h>
 #include <glob.h>
 #include <sys/stat.h>
-#include <linux/limits.h>
+#include <limits.h>
 
 #include "string_list.h"
 #include "alloc.h"
@@ -26,7 +26,7 @@
 
 static const char* base_file_name = NULL;
 static string_list_t* common_env = NULL;
-static char buffer[PATH_MAX]; // returning a pointer to this
+static char buffer[_POSIX_PATH_MAX]; // returning a pointer to this
 
 /**
  * @brief Handle errors around realpath().
@@ -135,7 +135,7 @@ const char* find_file(const char* fname) {
     // add the ".toy" on the end if it was not specified
     char* tmp_name = strrchr(fname, '.');
     if(NULL == tmp_name || strcmp(tmp_name, ".toy")) {
-        tmp_name = _ALLOC(PATH_MAX);
+        tmp_name = _ALLOC(_POSIX_PATH_MAX);
         strcpy(tmp_name, fname);
         strcat(tmp_name, ".toy");
     }
@@ -151,7 +151,7 @@ const char* find_file(const char* fname) {
     string_t* s;
 
     while(NULL != (s = iterate_string_list(common_env, &mark))) {
-        strncpy(buffer, raw_string(s), PATH_MAX);
+        strncpy(buffer, raw_string(s), _POSIX_PATH_MAX);
         strcat(buffer, "/");
         strcat(buffer, tmp_name);
 
