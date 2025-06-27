@@ -45,13 +45,13 @@ int peek_trace_verbosity(void) {
 
 void increment_trace_depth(void) {
 
-    trace_depth ++;
+    trace_depth++;
 }
 
 void decrement_trace_depth(void) {
 
     if(trace_depth > 0)
-        trace_depth --;
+        trace_depth--;
 }
 
 void reset_trace_depth(int val) {
@@ -82,7 +82,7 @@ FILE* get_trace_handle(void) {
 
 void print_indent(const char* fmt, ...) {
 
-    fprintf(trace_file_handle, "%*s", trace_depth*trace_increment, "");
+    fprintf(trace_file_handle, "%*s", trace_depth * trace_increment, "");
     va_list args;
 
     va_start(args, fmt);
@@ -92,7 +92,7 @@ void print_indent(const char* fmt, ...) {
 
 void print_trace(const char* fmt, ...) {
 
-    fprintf(trace_file_handle, "%*s", trace_depth*trace_increment, "");
+    fprintf(trace_file_handle, "%*s", trace_depth * trace_increment, "");
     fprintf(trace_file_handle, "TRACE: ");
     va_list args;
 
@@ -104,7 +104,7 @@ void print_trace(const char* fmt, ...) {
 
 void print_enter(const char* file, int line, const char* func) {
 
-    fprintf(trace_file_handle, "%*s", trace_depth*trace_increment, "");
+    fprintf(trace_file_handle, "%*s", trace_depth * trace_increment, "");
     fprintf(trace_file_handle, "ENTER: %s: %d: %s()\n", file, line, func);
     increment_trace_depth();
 }
@@ -112,6 +112,6 @@ void print_enter(const char* file, int line, const char* func) {
 void print_return(const char* file, int line, const char* func, const char* str) {
 
     decrement_trace_depth();
-    fprintf(trace_file_handle, "%*s", trace_depth*trace_increment, "");
+    fprintf(trace_file_handle, "%*s", trace_depth * trace_increment, "");
     fprintf(trace_file_handle, "RETURN: %s: %d: %s(): %s\n", file, line, func, str);
 }

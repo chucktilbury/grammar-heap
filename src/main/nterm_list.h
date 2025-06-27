@@ -1,19 +1,8 @@
-/**
- * @file nterm_list.h
- *
- * @brief Manage non-terminals data structure list.
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-06
- * @copyright Copyright (c) 2025
- */
 
 #ifndef _NTERM_LIST_H_
 #define _NTERM_LIST_H_
 
 #include "ast.h"
-#include "string_list.h"
 
 typedef pointer_list_t nterm_list_t;
 

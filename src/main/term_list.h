@@ -1,19 +1,8 @@
-/**
- * @file term_list.h
- *
- * @brief Manage the terminal list
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-06
- * @copyright Copyright (c) 2025
- */
 
 #ifndef _TERM_LIST_H_
 #define _TERM_LIST_H_
 
 #include "pointer_list.h"
-//#include "string_buffer.h"
 #include "tokens.h"
 
 typedef pointer_list_t term_list_t;

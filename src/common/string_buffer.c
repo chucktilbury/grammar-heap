@@ -1,13 +1,4 @@
-/**
- * @file strbuf.c
- *
- * @brief
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-03-25
- * @copyright Copyright (c) 2025
- */
+
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -145,7 +136,7 @@ string_t* strip_char(string_t* buf, int ch) {
 
     char* temp;
     while((temp = strrchr(buf->buffer, ch)) != NULL)
-        memmove(temp, temp+1, strlen(temp)+1);
+        memmove(temp, temp + 1, strlen(temp) + 1);
 
     buf->len = strlen(buf->buffer);
 
@@ -188,38 +179,38 @@ struct conv_tab {
 };
 
 static struct conv_tab tab[] = {
-    {'~', "TILDE"},
-    {'`', "BQUOTE"},
-    {'!', "BANG"},
-    {'@', "AT"},
-    {'#', "POUND"},
-    {'$', "DOLLAR"},
-    {'%', "PERCENT"},
-    {'^', "CARET"},
-    {'&', "AMP"},
-    {'*', "STAR"},
-    {'(', "OPAREN"},
-    {')', "CPAREN"},
-    {'-', "MINUS"},
-    {'=', "EQUAL"},
-    {'+', "PLUS"},
-    {'[', "OSBRACE"},
-    {'{', "OCBRACE"},
-    {']', "CSBRACE"},
-    {'}', "CCBRACE"},
-    {'\\', "BSLASH"},
-    {'|', "BAR"},
-    {';', "SCOLON"},
-    {':', "COLON"},
-    {'\'', "SQUOTE"},
-    {'\"', "DQUOTE"},
-    {',', "COMMA"},
-    {'<', "OPBRACE"},
-    {'.', "DOT"},
-    {'>', "CPBRACE"},
-    {'/', "SLASH"},
-    {'?', "QUESTION"},
-    {0, NULL}
+    { '~', "TILDE" },
+    { '`', "BQUOTE" },
+    { '!', "BANG" },
+    { '@', "AT" },
+    { '#', "POUND" },
+    { '$', "DOLLAR" },
+    { '%', "PERCENT" },
+    { '^', "CARET" },
+    { '&', "AMP" },
+    { '*', "STAR" },
+    { '(', "OPAREN" },
+    { ')', "CPAREN" },
+    { '-', "MINUS" },
+    { '=', "EQUAL" },
+    { '+', "PLUS" },
+    { '[', "OSBRACE" },
+    { '{', "OCBRACE" },
+    { ']', "CSBRACE" },
+    { '}', "CCBRACE" },
+    { '\\', "BSLASH" },
+    { '|', "BAR" },
+    { ';', "SCOLON" },
+    { ':', "COLON" },
+    { '\'', "SQUOTE" },
+    { '\"', "DQUOTE" },
+    { ',', "COMMA" },
+    { '<', "OPBRACE" },
+    { '.', "DOT" },
+    { '>', "CPBRACE" },
+    { '/', "SLASH" },
+    { '?', "QUESTION" },
+    { 0, NULL }
 };
 
 static char* conv_char(int ch, char* buffer, int size) {
@@ -251,170 +242,170 @@ string_t* convert(string_t* str) {
                 append_string_char(buf, '_');
         }
     }
-/*
+    /*
 
-        switch(str->buffer[i]) {
-            case '~':
-                append_string(buf, "TILDE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '`':
-                append_string(buf, "BQUOTE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '!':
-                append_string(buf, "BANG");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '@':
-                append_string(buf, "AT");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '#':
-                append_string(buf, "POUND");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '$':
-                append_string(buf, "DOLLAR");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '%':
-                append_string(buf, "PERCENT");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '^':
-                append_string(buf, "CARET");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '&':
-                append_string(buf, "AMP");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '*':
-                append_string(buf, "STAR");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '(':
-                append_string(buf, "OPAREN");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case ')':
-                append_string(buf, "CPAREN");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '-':
-                append_string(buf, "MINUS");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '=':
-                append_string(buf, "EQUAL");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '+':
-                append_string(buf, "PLUS");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '[':
-                append_string(buf, "OSBRACE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '{':
-                append_string(buf, "OCBRACE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case ']':
-                append_string(buf, "CSBRACE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '}':
-                append_string(buf, "CCBRACE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '\\':
-                append_string(buf, "BSLASH");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '|':
-                append_string(buf, "BAR");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case ';':
-                append_string(buf, "SCOLON");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case ':':
-                append_string(buf, "COLON");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '\'':
-                append_string(buf, "SQUOTE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '\"':
-                append_string(buf, "DQUOTE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case ',':
-                append_string(buf, "COMMA");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '<':
-                append_string(buf, "OPBRACE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '.':
-                append_string(buf, "DOT");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '>':
-                append_string(buf, "CPBRACE");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '/':
-                append_string(buf, "SLASH");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            case '?':
-                append_string(buf, "QUESTION");
-                if(str->buffer[i + 1] != '\0')
-                    append_string_char(buf, '_');
-                break;
-            default:
-                append_string_char(buf, str->buffer[i]);
-                break;
+            switch(str->buffer[i]) {
+                case '~':
+                    append_string(buf, "TILDE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '`':
+                    append_string(buf, "BQUOTE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '!':
+                    append_string(buf, "BANG");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '@':
+                    append_string(buf, "AT");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '#':
+                    append_string(buf, "POUND");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '$':
+                    append_string(buf, "DOLLAR");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '%':
+                    append_string(buf, "PERCENT");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '^':
+                    append_string(buf, "CARET");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '&':
+                    append_string(buf, "AMP");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '*':
+                    append_string(buf, "STAR");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '(':
+                    append_string(buf, "OPAREN");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case ')':
+                    append_string(buf, "CPAREN");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '-':
+                    append_string(buf, "MINUS");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '=':
+                    append_string(buf, "EQUAL");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '+':
+                    append_string(buf, "PLUS");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '[':
+                    append_string(buf, "OSBRACE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '{':
+                    append_string(buf, "OCBRACE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case ']':
+                    append_string(buf, "CSBRACE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '}':
+                    append_string(buf, "CCBRACE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '\\':
+                    append_string(buf, "BSLASH");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '|':
+                    append_string(buf, "BAR");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case ';':
+                    append_string(buf, "SCOLON");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case ':':
+                    append_string(buf, "COLON");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '\'':
+                    append_string(buf, "SQUOTE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '\"':
+                    append_string(buf, "DQUOTE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case ',':
+                    append_string(buf, "COMMA");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '<':
+                    append_string(buf, "OPBRACE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '.':
+                    append_string(buf, "DOT");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '>':
+                    append_string(buf, "CPBRACE");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '/':
+                    append_string(buf, "SLASH");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                case '?':
+                    append_string(buf, "QUESTION");
+                    if(str->buffer[i + 1] != '\0')
+                        append_string_char(buf, '_');
+                    break;
+                default:
+                    append_string_char(buf, str->buffer[i]);
+                    break;
+            }
         }
-    }
-*/
+    */
     return buf;
 }
 

@@ -1,13 +1,3 @@
-/**
- * @file ast.c
- *
- * @brief Abstract Syntax Tree
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-01
- * @copyright Copyright (c) 2025
- */
 
 #include "ast.h"
 #include "parser.h"
@@ -27,23 +17,11 @@ static void grouping_function(grouping_function_t* node);
 static void directive(directive_t* node);
 static void inline_code(inline_code_t* node);
 
-/*
- * grammar
- * : grammar_list
- * ;
- */
 static void grammar(grammar_t* node) {
 
     grammar_list(node->grammar_list);
 }
 
-
-/*
- * grammar_list
- * : non_terminal_rule  SEMI
- * | grammar non_terminal_rule SEMI
- * ;
- */
 static void grammar_list(grammar_list_t* node) {
 
     int mark = 0;
@@ -51,15 +29,8 @@ static void grammar_list(grammar_list_t* node) {
 
     while(NULL != (rule = (grammar_rule_t*)iterate_ast_node_list(node->list, &mark)))
         grammar_rule(rule);
-
 }
 
-
-/*
- g *rammar_rule
- : NON_TERMINAL grouping_function
- ;
- */
 static void grammar_rule(grammar_rule_t* node) {
 
 
@@ -70,7 +41,6 @@ static void grammar_rule(grammar_rule_t* node) {
     }
     else
         directive(node->directive);
-
 }
 
 static void directive(directive_t* node) {
@@ -79,15 +49,8 @@ static void directive(directive_t* node) {
     // type is an int and code is a token
     fprintf(stdout, "%s {", token_to_str(node->type));
     fprintf(stdout, "%s}\n\n", raw_string(node->code->str));
-
 }
 
-/*
- r *ule_element_list
- : rule_element
- | rule_element_list rule_element
- ;
- */
 static void rule_element_list(rule_element_list_t* node) {
 
     int mark = 0;
@@ -95,23 +58,9 @@ static void rule_element_list(rule_element_list_t* node) {
 
     while(NULL != (rule = (rule_element_t*)iterate_ast_node_list(node->list, &mark)))
         rule_element(rule);
-
 }
 
 
-/*
- r *ule_element
- : NON_TERMINAL
- | TERMINAL_NAME
- | TERMINAL_OPER
- | TERMINAL_SYMBOL
- | or_function
- | zero_or_more_function
- | zero_or_one_function
- | one_or_more_function
- | grouping_function
- ;
- */
 static void rule_element(rule_element_t* node) {
 
     if(node->token != NULL) {
@@ -155,14 +104,8 @@ static void rule_element(rule_element_t* node) {
     }
     else
         FATAL("invalid rule element");
-
 }
 
-/*
- o *r_function
- : rule_element PIPE rule_element
- ;
- */
 static void or_function(or_function_t* node) {
 
     rule_element(node->left);
@@ -170,22 +113,12 @@ static void or_function(or_function_t* node) {
     rule_element(node->right);
 }
 
-/*
- z *ero_or_more_function
- : rule_element QUESTION
- ;
- */
 static void zero_or_more_function(zero_or_more_function_t* node) {
 
     rule_element(node->rule_element);
     fprintf(stdout, "*");
 }
 
-/*
- z *ero_or_one_function
- : rule_element STAR
- ;
- */
 static void zero_or_one_function(zero_or_one_function_t* node) {
 
     rule_element(node->rule_element);
@@ -193,22 +126,12 @@ static void zero_or_one_function(zero_or_one_function_t* node) {
 }
 
 
-/*
- o *ne_or_more_function
- : rule_element PLUS
- ;
- */
 static void one_or_more_function(one_or_more_function_t* node) {
 
     rule_element(node->rule_element);
     fprintf(stdout, "+");
 }
 
-/*
- g *rouping_function
- : OPAREN rule_element_list CPAREN
- ;
- */
 static void grouping_function(grouping_function_t* node) {
 
     fprintf(stdout, "(");
@@ -218,7 +141,7 @@ static void grouping_function(grouping_function_t* node) {
 
 static void inline_code(inline_code_t* node) {
 
-    //grouping_function(node->group);
+    // grouping_function(node->group);
     fprintf(stdout, " CODE_BLOCK");
 }
 
@@ -227,18 +150,18 @@ static void inline_code(inline_code_t* node) {
 static size_t get_node_size(ast_type_t type) {
 
     return (type == NTERM_GRAMMAR)                ? sizeof(grammar_t) :
-    (type == NTERM_GRAMMAR_LIST)          ? sizeof(grammar_list_t) :
-    (type == NTERM_GRAMMAR_RULE)          ? sizeof(grammar_rule_t) :
-    (type == NTERM_RULE_ELEMENT_LIST)     ? sizeof(rule_element_list_t) :
-    (type == NTERM_RULE_ELEMENT)          ? sizeof(rule_element_t) :
-    (type == NTERM_OR_FUNCTION)           ? sizeof(or_function_t) :
-    (type == NTERM_ZERO_OR_MORE_FUNCTION) ? sizeof(zero_or_more_function_t) :
-    (type == NTERM_ZERO_OR_ONE_FUNCTION)  ? sizeof(zero_or_one_function_t) :
-    (type == NTERM_ONE_OR_MORE_FUNCTION)  ? sizeof(one_or_more_function_t) :
-    (type == NTERM_GROUPING_FUNCTION)     ? sizeof(grouping_function_t) :
-    (type == NTERM_DIRECTIVE)     ? sizeof(directive_t) :
-    (type == NTERM_INLINE_CODE)     ? sizeof(inline_code_t) :
-    (size_t)-1;
+            (type == NTERM_GRAMMAR_LIST)          ? sizeof(grammar_list_t) :
+            (type == NTERM_GRAMMAR_RULE)          ? sizeof(grammar_rule_t) :
+            (type == NTERM_RULE_ELEMENT_LIST)     ? sizeof(rule_element_list_t) :
+            (type == NTERM_RULE_ELEMENT)          ? sizeof(rule_element_t) :
+            (type == NTERM_OR_FUNCTION)           ? sizeof(or_function_t) :
+            (type == NTERM_ZERO_OR_MORE_FUNCTION) ? sizeof(zero_or_more_function_t) :
+            (type == NTERM_ZERO_OR_ONE_FUNCTION)  ? sizeof(zero_or_one_function_t) :
+            (type == NTERM_ONE_OR_MORE_FUNCTION)  ? sizeof(one_or_more_function_t) :
+            (type == NTERM_GROUPING_FUNCTION)     ? sizeof(grouping_function_t) :
+            (type == NTERM_DIRECTIVE)             ? sizeof(directive_t) :
+            (type == NTERM_INLINE_CODE)           ? sizeof(inline_code_t) :
+                                                    (size_t)-1;
 }
 
 ast_node_t* create_ast_node(ast_type_t type) {
@@ -282,16 +205,16 @@ int len_ast_node_list(ast_node_list_t* lst) {
 const char* nterm_to_str(ast_type_t type) {
 
     return (type == NTERM_GRAMMAR)                ? "NTERM_GRAMMAR" :
-    (type == NTERM_GRAMMAR_LIST)          ? "NTERM_GRAMMAR_LIST" :
-    (type == NTERM_GRAMMAR_RULE)          ? "NTERM_GRAMMAR_RULE" :
-    (type == NTERM_RULE_ELEMENT_LIST)     ? "NTERM_RULE_ELEMENT_LIST" :
-    (type == NTERM_RULE_ELEMENT)          ? "NTERM_RULE_ELEMENT" :
-    (type == NTERM_OR_FUNCTION)           ? "NTERM_OR_FUNCTION" :
-    (type == NTERM_ZERO_OR_MORE_FUNCTION) ? "NTERM_ZERO_OR_MORE_FUNCTION" :
-    (type == NTERM_ZERO_OR_ONE_FUNCTION)  ? "NTERM_ZERO_OR_ONE_FUNCTION" :
-    (type == NTERM_ONE_OR_MORE_FUNCTION)  ? "NTERM_ONE_OR_MORE_FUNCTION" :
-    (type == NTERM_GROUPING_FUNCTION)     ? "NTERM_GROUPING_FUNCTION" :
-    (type == NTERM_DIRECTIVE)     ? "NTERM_DIRECTIVE" :
-    (type == NTERM_INLINE_CODE)     ? "NTERM_INLINE_CODE" :
-    "UNKNOWN";
+            (type == NTERM_GRAMMAR_LIST)          ? "NTERM_GRAMMAR_LIST" :
+            (type == NTERM_GRAMMAR_RULE)          ? "NTERM_GRAMMAR_RULE" :
+            (type == NTERM_RULE_ELEMENT_LIST)     ? "NTERM_RULE_ELEMENT_LIST" :
+            (type == NTERM_RULE_ELEMENT)          ? "NTERM_RULE_ELEMENT" :
+            (type == NTERM_OR_FUNCTION)           ? "NTERM_OR_FUNCTION" :
+            (type == NTERM_ZERO_OR_MORE_FUNCTION) ? "NTERM_ZERO_OR_MORE_FUNCTION" :
+            (type == NTERM_ZERO_OR_ONE_FUNCTION)  ? "NTERM_ZERO_OR_ONE_FUNCTION" :
+            (type == NTERM_ONE_OR_MORE_FUNCTION)  ? "NTERM_ONE_OR_MORE_FUNCTION" :
+            (type == NTERM_GROUPING_FUNCTION)     ? "NTERM_GROUPING_FUNCTION" :
+            (type == NTERM_DIRECTIVE)             ? "NTERM_DIRECTIVE" :
+            (type == NTERM_INLINE_CODE)           ? "NTERM_INLINE_CODE" :
+                                                    "UNKNOWN";
 }

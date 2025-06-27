@@ -1,13 +1,4 @@
-/**
- * @file ast.h
- *
- * @brief Abstract Syntax Tree
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-01
- * @copyright Copyright (c) 2025
- */
+
 #ifndef _AST_H_
 #define _AST_H_
 
@@ -30,29 +21,17 @@ typedef enum {
     NTERM_INLINE_CODE,
 } ast_type_t;
 
-typedef struct
-{
+typedef struct {
     ast_type_t type;
 } ast_node_t;
 
 typedef pointer_list_t ast_node_list_t;
 
-/*
- g rammar             *
- : grammar_list
- ;
- */
 typedef struct _grammar_t_ {
     ast_node_t node;
     struct _grammar_list_t_* grammar_list;
 } grammar_t;
 
-/*
- g rammar_list        *
- : grammar_rule
- | grammar grammar_rule
- ;
- */
 typedef struct _grammar_list_t_ {
     ast_node_t node;
     ast_node_list_t* list;
@@ -64,11 +43,6 @@ typedef struct _directive_t_ {
     token_t* code;
 } directive_t;
 
-/*
- g rammar_rule       *
- : NON_TERMINAL grouping_function
- ;
- */
 typedef struct _grammar_rule_t_ {
     ast_node_t node;
     token_t* NON_TERMINAL;
@@ -76,41 +50,17 @@ typedef struct _grammar_rule_t_ {
     struct _directive_t_* directive;
 } grammar_rule_t;
 
-/*
- r ule_element_list   *
- : rule_element
- | rule_element_list rule_element
- ;
- */
 typedef struct _rule_element_list_t_ {
     ast_node_t node;
     ast_node_list_t* list;
 } rule_element_list_t;
 
-/*
- r ule_element       *
- : NON_TERMINAL
- | TERMINAL_KEYWORD
- | TERMINAL_OPER
- | TERMINAL_SYMBOL
- | or_function
- | zero_or_more_function
- | zero_or_one_function
- | one_or_more_function
- | grouping_function
- ;
- */
 typedef struct _rule_element_t_ {
     ast_node_t node;
     token_t* token;
     ast_node_t* nterm;
 } rule_element_t;
 
-/*
- o r_function         *
- : rule_element PIPE
- ;
- */
 typedef struct _or_function_t_ {
     ast_node_t node;
     struct _rule_element_t_* left;
@@ -120,11 +70,6 @@ typedef struct _or_function_t_ {
     string_list_t* impl;
 } or_function_t;
 
-/*
- z ero_or_more_functio*n
- : rule_element QUESTION
- ;
- */
 typedef struct _zero_or_more_function_t_ {
     ast_node_t node;
     struct _rule_element_t_* rule_element;
@@ -133,11 +78,6 @@ typedef struct _zero_or_more_function_t_ {
     string_list_t* impl;
 } zero_or_more_function_t;
 
-/*
- z ero_or_one_function*
- : rule_element STAR
- ;
- */
 typedef struct _zero_or_one_function_t_ {
     ast_node_t node;
     struct _rule_element_t_* rule_element;
@@ -146,11 +86,6 @@ typedef struct _zero_or_one_function_t_ {
     string_list_t* impl;
 } zero_or_one_function_t;
 
-/*
- o ne_or_more_function*
- : rule_element PLUS
- ;
- */
 typedef struct _one_or_more_function_t_ {
     ast_node_t node;
     struct _rule_element_t_* rule_element;
@@ -159,11 +94,6 @@ typedef struct _one_or_more_function_t_ {
     string_list_t* impl;
 } one_or_more_function_t;
 
-/*
- g rouping_function   *
- : OPAREN rule_element_list CPAREN
- ;
- */
 typedef struct _grouping_function_t_ {
     ast_node_t node;
     struct _rule_element_list_t_* rule_element_list;

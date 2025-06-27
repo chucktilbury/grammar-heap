@@ -1,13 +1,4 @@
-/**
- * @file strlist.c
- *
- * @brief Thin wrapper for pointer lists.
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-01
- * @copyright Copyright (c) 2025
- */
+
 #include <string.h>
 
 #include "string_list.h"
@@ -120,5 +111,3 @@ void append_string_list_list(string_list_t* dest, string_list_t* src) {
     while(NULL != (item = iterate_string_list(src, &mark)))
         append_string_list(dest, copy_string(item));
 }
-
-

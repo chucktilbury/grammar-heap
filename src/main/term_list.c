@@ -1,13 +1,3 @@
-/**
- * @file term_list.c
- *
- * @brief
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-06
- * @copyright Copyright (c) 2025
- */
 
 #include "term_list.h"
 #include "alloc.h"
@@ -80,4 +70,3 @@ void sort_term_list(void) {
 
     sort_ptr_list(get_master_list()->term_list, comp_term);
 }
-

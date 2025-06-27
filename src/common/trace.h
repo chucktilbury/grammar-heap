@@ -15,9 +15,9 @@
 
 #define INIT_TRACE(fh) init_trace(fh)
 
-#define MSG(n, ...) \
-    do { \
-        if((n) < peek_trace_verbosity()) \
+#define MSG(n, ...)                                   \
+    do {                                              \
+        if((n) < peek_trace_verbosity())              \
             fprintf(get_trace_handle(), __VA_ARGS__); \
     } while(0)
 
@@ -29,50 +29,50 @@ void init_trace(FILE* fp);
 extern int trace_depth;
 static int local_verbosity = 0;
 
-#define PRINT(...) \
-    do { \
+#define PRINT(...)                                     \
+    do {                                               \
         if(local_verbosity < peek_trace_verbosity()) { \
-            print_indent(__VA_ARGS__); \
-        } \
+            print_indent(__VA_ARGS__);                 \
+        }                                              \
     } while(0)
 
-#define TRACE(...) \
-    do { \
+#define TRACE(...)                                     \
+    do {                                               \
         if(local_verbosity < peek_trace_verbosity()) { \
-            print_trace(__VA_ARGS__); \
-        } \
+            print_trace(__VA_ARGS__);                  \
+        }                                              \
     } while(0)
 
-#define ENTER \
-    do { \
+#define ENTER                                          \
+    do {                                               \
         if(local_verbosity < peek_trace_verbosity()) { \
-            print_enter(__FILE__, __LINE__, __func__);\
-        } \
+            print_enter(__FILE__, __LINE__, __func__); \
+        }                                              \
     } while(0)
 
-#define RETURN(...) \
-    do { \
-        if(local_verbosity < peek_trace_verbosity()) { \
+#define RETURN(...)                                                   \
+    do {                                                              \
+        if(local_verbosity < peek_trace_verbosity()) {                \
             print_return(__FILE__, __LINE__, __func__, #__VA_ARGS__); \
-        } \
-        return __VA_ARGS__; \
+        }                                                             \
+        return __VA_ARGS__;                                           \
     } while(0)
 
-#define SEPARATOR \
-    do { \
+#define SEPARATOR                                      \
+    do {                                               \
         if(local_verbosity < peek_trace_verbosity()) { \
-            for(int i = 0; i < 80; i++) \
-                fputc('-', get_trace_handle()); \
-            fputc('\n', get_trace_handle()); \
-        } \
+            for(int i = 0; i < 80; i++)                \
+                fputc('-', get_trace_handle());        \
+            fputc('\n', get_trace_handle());           \
+        }                                              \
     } while(0)
 
-#define TRACE_HEADER \
-    do { \
-        reset_trace_depth(0); \
-        SEPARATOR; \
+#define TRACE_HEADER               \
+    do {                           \
+        reset_trace_depth(0);      \
+        SEPARATOR;                 \
         PRINT("\t%s\n", __func__); \
-        SEPARATOR; \
+        SEPARATOR;                 \
     } while(0)
 
 #define PUSH_TRACE_VERBOSITY(n) push_trace_verbosity(n)

@@ -1,8 +1,9 @@
+
 #ifndef _ERRORS_H_
 #define _ERRORS_H_
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> // for abort() and exit()
 
 #ifdef USE_ASSERTS
 #define ASSERT(expr, ...)                                                                                 \

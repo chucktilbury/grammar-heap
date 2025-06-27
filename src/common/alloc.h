@@ -1,13 +1,4 @@
-/**
- * @file alloc.h
- *
- * @brief
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-03-25
- * @copyright Copyright (c) 2025
- */
+
 #ifndef _ALLOC_H_
 #define _ALLOC_H_
 

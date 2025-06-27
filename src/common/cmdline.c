@@ -129,7 +129,7 @@ static void store_environment(char** env) {
     char buffer[1024];
 
     for(int i = 0; env[i] != NULL; i++) {
-        //printf("%s\n", env[i]);
+        // printf("%s\n", env[i]);
         cmdline_entry_t* ptr = _ALLOC_TYPE(cmdline_entry_t);
 
         strncpy(buffer, env[i], sizeof(buffer));
@@ -699,13 +699,13 @@ int in_cmd_list(const char* name, const char* item) {
 void create_config(int argc, char** argv, char** env) {
 
     init_cmdline("test cmd line", "FSA parser generator", "0.1");
-    add_cmdline('v', "verbosity", "verbosity", "From 0 to 10. Print more information", "0", NULL, CMD_NUM|CMD_ARGS);
+    add_cmdline('v', "verbosity", "verbosity", "From 0 to 10. Print more information", "0", NULL, CMD_NUM | CMD_ARGS);
     add_cmdline('x', NULL, "exx", "just another command line arg", "0", NULL, CMD_SWITCH);
-    add_cmdline('L', NULL, "lst", "Add a list", NULL, NULL, CMD_LIST|CMD_ARGS);
+    add_cmdline('L', NULL, "lst", "Add a list", NULL, NULL, CMD_LIST | CMD_ARGS);
     add_cmdline('h', "help", NULL, "Print this helpful information", NULL, cmdline_help, CMD_NONE);
     add_cmdline('V', "version", NULL, "Show the program version", NULL, cmdline_vers, CMD_NONE);
     add_cmdline(0, NULL, NULL, NULL, NULL, NULL, CMD_DIV);
-    add_cmdline(0, NULL, "files", "File name(s) to input", NULL, NULL, CMD_REQD|CMD_ANON);
+    add_cmdline(0, NULL, "files", "File name(s) to input", NULL, NULL, CMD_REQD | CMD_ANON);
 
     parse_cmdline(argc, argv, env);
 

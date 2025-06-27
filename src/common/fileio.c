@@ -1,13 +1,4 @@
-/**
- * @file fileio.c
- * @brief Handle operating system specific file operations.
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @date 2025-02-28
- * @version 0.0.1
- * @copyright Copyright 2025
- */
-// all functions defined in scanner.l
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -21,7 +12,6 @@
 #include "alloc.h"
 #include "errors.h"
 
-// #define USE_TRACE
 #include "trace.h"
 
 static const char* base_file_name = NULL;
@@ -83,7 +73,7 @@ static void add_dirs(const char* dname) {
     tmp = (char*)get_path(dname);
     strcat(tmp, "/*");
     glob_t gstruct;
-    glob(tmp, GLOB_NOSORT|GLOB_NOESCAPE, NULL, &gstruct);
+    glob(tmp, GLOB_NOSORT | GLOB_NOESCAPE, NULL, &gstruct);
 
     // printf("paths: %lu\n", gstruct.gl_pathc);
     for(size_t i = 0; i < gstruct.gl_pathc; i++) {

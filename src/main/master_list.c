@@ -1,14 +1,3 @@
-/**
- * @file lists.c
- *
- * @brief Traverse the AST to create the base lists. Terminals and
- * nonterminals as well as their associated objects.
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-01
- * @copyright Copyright (c) 2025
- */
 
 #include "ast.h"
 #include "errors.h"
@@ -19,7 +8,7 @@
 #include "nterm_list.h"
 #include "string_buffer.h"
 #include "term_list.h"
-//#include "nterm_comment.h"
+// #include "nterm_comment.h"
 
 static master_list_t* master_list = NULL;
 
@@ -36,23 +25,12 @@ static void grouping_function(grouping_function_t* node);
 static void inline_code(inline_code_t* node);
 static void directive(directive_t* node);
 
-/*
- * grammar
- * : grammar_list
- * ;
- */
 static void grammar(grammar_t* node) {
 
     grammar_list(node->grammar_list);
 }
 
 
-/*
- * grammar_list
- * : non_terminal_rule  SEMI
- * | grammar non_terminal_rule SEMI
- * ;
- */
 static void grammar_list(grammar_list_t* node) {
 
     int mark = 0;
@@ -71,8 +49,8 @@ static void directive(directive_t* node) {
             append_string_str(master_list->pre_text, node->code->str);
             break;
         case POSTTEXT:
-            append_string_fmt(master_list->pre_text, "\n// %d post-text directive seen.\n", node->code->line_no);
-            append_string_str(master_list->pre_text, node->code->str);
+            append_string_fmt(master_list->post_text, "\n// %d post-text directive seen.\n", node->code->line_no);
+            append_string_str(master_list->post_text, node->code->str);
             break;
         case PRECODE:
             append_string_fmt(master_list->pre_code, "\n// %d pre-code directive seen.\n", node->code->line_no);
@@ -83,20 +61,20 @@ static void directive(directive_t* node) {
             append_string_str(master_list->post_code, node->code->str);
             break;
         case REQUIRES:
-            append_string_fmt(master_list->post_code, "\n// %d requires directive seen.\n", node->code->line_no);
-            append_string_str(master_list->post_code, node->code->str);
+            append_string_fmt(master_list->parser_req, "\n// %d requires directive seen.\n", node->code->line_no);
+            append_string_str(master_list->parser_req, node->code->str);
             break;
         case PROVIDES:
-            append_string_fmt(master_list->post_code, "\n// %d provides directive seen.\n", node->code->line_no);
-            append_string_str(master_list->post_code, node->code->str);
+            append_string_fmt(master_list->parser_prov, "\n// %d provides directive seen.\n", node->code->line_no);
+            append_string_str(master_list->parser_prov, node->code->str);
             break;
         case TERM_DEF:
-            append_string_fmt(master_list->post_code, "\n// %d terminal directive seen.\n", node->code->line_no);
-            append_string_str(master_list->post_code, node->code->str);
+            append_string_fmt(master_list->term_def, "\n// %d terminal directive seen.\n", node->code->line_no);
+            append_string_str(master_list->term_def, node->code->str);
             break;
         case NTERM_DEF:
-            append_string_fmt(master_list->post_code, "\n// %d non-terminal directive seen.\n", node->code->line_no);
-            append_string_str(master_list->post_code, node->code->str);
+            append_string_fmt(master_list->nterm_def, "\n// %d non-terminal directive seen.\n", node->code->line_no);
+            append_string_str(master_list->nterm_def, node->code->str);
             break;
 
         default:
@@ -104,11 +82,6 @@ static void directive(directive_t* node) {
     }
 }
 
-/*
- n *on_terminal_rule
- : NON_TERMINAL grouping_function
- ;
- */
 static void grammar_rule(grammar_rule_t* node) {
 
     if(node->NON_TERMINAL != NULL) {
@@ -125,12 +98,6 @@ static void grammar_rule(grammar_rule_t* node) {
 }
 
 
-/*
- r *ule_element_list
- : rule_element
- | rule_element_list rule_element
- ;
- */
 static void rule_element_list(rule_element_list_t* node) {
 
     int mark = 0;
@@ -141,20 +108,6 @@ static void rule_element_list(rule_element_list_t* node) {
 }
 
 
-/*
- r *ule_element
- : NON_TERMINAL
- | TERMINAL_NAME
- | TERMINAL_OPER
- | TERMINAL_SYMBOL
- | non_terminal_rule_element
- | or_function
- | zero_or_more_function
- | zero_or_one_function
- | one_or_more_function
- | grouping_function
- ;
- */
 static void rule_element(rule_element_t* node) {
 
     if(node->token != NULL) {
@@ -215,53 +168,28 @@ static void rule_element(rule_element_t* node) {
         FATAL("invalid rule element");
 }
 
-/*
- o *r_function
- : rule_element PIPE rule_element
- ;
- */
 static void or_function(or_function_t* node) {
 
     rule_element(node->left);
     rule_element(node->right);
 }
 
-/*
- z *ero_or_more_function
- : rule_element QUESTION
- ;
- */
 static void zero_or_more_function(zero_or_more_function_t* node) {
 
     rule_element(node->rule_element);
 }
 
-/*
- z *ero_or_one_function
- : rule_element STAR
- ;
- */
 static void zero_or_one_function(zero_or_one_function_t* node) {
 
     rule_element(node->rule_element);
 }
 
 
-/*
- o *ne_or_more_function
- : rule_element PLUS
- ;
- */
 static void one_or_more_function(one_or_more_function_t* node) {
 
     rule_element(node->rule_element);
 }
 
-/*
- g *rouping_function
- : OPAREN rule_element_list CPAREN
- ;
- */
 static void grouping_function(grouping_function_t* node) {
 
     rule_element_list(node->rule_element_list);
@@ -270,7 +198,7 @@ static void grouping_function(grouping_function_t* node) {
 static void inline_code(inline_code_t* node) {
 
     (void)node;
-    //grouping_function(node->group);
+    // grouping_function(node->group);
 }
 
 
@@ -304,8 +232,8 @@ void init_master_list(void) {
     master_list->post_text = create_string(NULL);
     master_list->pre_code = create_string(NULL);
     master_list->post_code = create_string(NULL);
-    master_list->requires = create_string(NULL);
-    master_list->provides = create_string(NULL);
+    master_list->parser_req = create_string(NULL);
+    master_list->parser_prov = create_string(NULL);
     master_list->term_def = create_string(NULL);
     master_list->nterm_def = create_string(NULL);
 }
@@ -315,7 +243,7 @@ master_list_t* get_master_list(void) {
     return master_list;
 }
 
-void set_root_node(void* ptr)  {
+void set_root_node(void* ptr) {
 
     master_list->root_node = ptr;
 }
@@ -334,8 +262,8 @@ void destroy_master_list(master_list_t* lst) {
         destroy_string(lst->post_text);
         destroy_string(lst->pre_code);
         destroy_string(lst->post_code);
-        destroy_string(lst->requires);
-        destroy_string(lst->provides);
+        destroy_string(lst->parser_req);
+        destroy_string(lst->parser_prov);
         destroy_string(lst->term_def);
         destroy_string(lst->nterm_def);
         _FREE(lst);
@@ -373,12 +301,12 @@ void dump_master_list(void) {
     printf("\n");
     printf("------------------------------------------------------------------\n");
     printf("PROVIDES:\n");
-    emit_string(get_trace_handle(), master_list->provides);
+    emit_string(get_trace_handle(), master_list->parser_prov);
 
     printf("\n");
     printf("------------------------------------------------------------------\n");
     printf("REQUIRES:\n");
-    emit_string(get_trace_handle(), master_list->requires);
+    emit_string(get_trace_handle(), master_list->parser_req);
 
     printf("\n");
     printf("------------------------------------------------------------------\n");

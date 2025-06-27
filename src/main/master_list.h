@@ -1,13 +1,3 @@
-/**
- * @file lists.h
- *
- * @brief Traverse the AST to create the raw lists
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-06
- * @copyright Copyright (c) 2025
- */
 #ifndef _LISTS_H_
 #define _LISTS_H_
 
@@ -25,8 +15,8 @@ typedef struct {
     string_t* post_text;
     string_t* pre_code;
     string_t* post_code;
-    string_t* requires;
-    string_t* provides;
+    string_t* parser_req;
+    string_t* parser_prov;
     string_t* term_def;
     string_t* nterm_def;
 } master_list_t;
@@ -41,4 +31,3 @@ void* get_root_node(void);
 void set_root_node(void* ptr);
 
 #endif /* _LISTS_H_ */
-

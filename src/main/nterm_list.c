@@ -1,19 +1,7 @@
-/**
- * @file nterm_list.c
- *
- * @brief
- *
- * @author Chuck Tilbury (chucktilbury@gmail.com)
- * @version 0.1
- * @date 2025-04-06
- * @copyright Copyright (c) 2025
- */
 
 #include "nterm_list.h"
 #include "alloc.h"
 #include "pointer_list.h"
-//#include "string_list.h"
-//#include "nterm_rules.h"
 #include "master_list.h"
 
 nterm_list_t* create_nterm_list(void) {
@@ -88,4 +76,3 @@ nterm_item_t* find_nterm(string_t* str) {
 
     return find_ptr_list(get_master_list()->nterm_list, &item, comp_nterm);
 }
-

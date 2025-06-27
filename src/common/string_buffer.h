@@ -1,5 +1,6 @@
-#ifndef _STRGS_H_
-#define _STRGS_H_
+
+#ifndef _STRING_BUFFER_H_
+#define _STRING_BUFFER_H_
 
 #include <stdio.h>
 #include <stddef.h>
@@ -32,4 +33,4 @@ string_t* strip_space(string_t* buf);
 string_t* convert(string_t* str);
 string_t* copy_string(string_t* buf);
 
-#endif /* _STRGS_H_ */
+#endif /* _STRING_BUFFER_H_ */
