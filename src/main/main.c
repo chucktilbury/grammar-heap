@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "cmdline.h"
 #include "master_list.h"
+#include "rule_states.h"
 #include "trace.h"
 
 int find_dumper(const char* name) {
@@ -41,6 +42,7 @@ int main(int argc, char** argv, char** env) {
         return errors;
 
     make_raw_lists();
+    // detect_recursion();
 
     if(find_dumper("ast")) {
         traverse_ast();

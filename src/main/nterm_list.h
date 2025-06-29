@@ -11,6 +11,7 @@ typedef struct {
     string_t* type;
     ast_node_t* node;
     int ref_count;
+    int is_recursive;
 } nterm_item_t;
 
 nterm_list_t* create_nterm_list(void);

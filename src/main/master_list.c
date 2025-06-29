@@ -111,7 +111,6 @@ static void rule_element_list(rule_element_list_t* node) {
 static void rule_element(rule_element_t* node) {
 
     if(node->token != NULL) {
-
         switch(node->token->type) {
             case TERMINAL_KEYWORD:
                 append_term_list(create_term_item(node->token, 1));
@@ -339,8 +338,10 @@ void dump_master_list(void) {
 
     mark = 0;
     nterm_item_t* nitem;
-    while(NULL != (nitem = iterate_nterm_list(&mark)))
-        printf("\t%3d. %-20s%-25s%p\n", mark, nitem->nterm->buffer, nitem->type->buffer, (void*)nitem->node);
+    while(NULL != (nitem = iterate_nterm_list(&mark))) {
+        printf("\t%3d. %-20s%-25s%p (%d)\n", mark, nitem->nterm->buffer,
+               nitem->type->buffer, (void*)nitem->node, nitem->is_recursive);
+    }
 
     printf("\n");
 }
