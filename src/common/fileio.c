@@ -116,7 +116,7 @@ static void setup_env(void) {
  * @param fname
  * @return const char*
  */
-const char* find_file(const char* fname) {
+const char* find_file(const char* fname, const char* ext) {
 
     ENTER;
 
@@ -124,10 +124,10 @@ const char* find_file(const char* fname) {
 
     // add the ".toy" on the end if it was not specified
     char* tmp_name = strrchr(fname, '.');
-    if(NULL == tmp_name || strcmp(tmp_name, ".toy")) {
+    if(NULL == tmp_name || strcmp(tmp_name, ext)) {
         tmp_name = _ALLOC(_POSIX_PATH_MAX);
         strcpy(tmp_name, fname);
-        strcat(tmp_name, ".toy");
+        strcat(tmp_name, ext);
     }
     else
         tmp_name = _COPY_STRING(fname);

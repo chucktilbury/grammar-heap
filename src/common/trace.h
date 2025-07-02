@@ -92,7 +92,6 @@ void print_return(const char* file, int line, const char* func, const char* str)
 
 #else
 
-#define MSG(n, ...)
 #define TRACE(...)
 #define ENTER
 #define RETURN(...)         \

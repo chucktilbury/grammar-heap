@@ -306,6 +306,7 @@ inline_code
 #include "cmdline.h"
 #include "trace.h"
 #include "errors.h"
+#include "fileio.h"
 
 extern FILE* yyin;
 
@@ -329,7 +330,7 @@ void init_parser(void) {
 
     TRACE_HEADER;
 
-    const char* fname = raw_string(get_cmd_opt("files"));
+    const char* fname = find_file(raw_string(get_cmd_opt("files")), ".g");
     if(fname != NULL) {
         yyin = fopen(fname, "r");
         if(yyin == NULL) {

@@ -173,7 +173,7 @@ void* next_dl_list_node(dl_list_t* lst) {
 
 #if 0
 // build string:
-// clang -g -Wall -Wextra -Wpedantic -pedantic -o t dl_list.c
+// clang -g -Wall -Wextra -Wpedantic -pedantic -o t dl_list.c alloc.c
 
 #include <stdio.h>
 #include <string.h>
