@@ -3,19 +3,37 @@
 #include <stdint.h>
 
 #include "tokens.h"
-#include "ast.h"
-#include "master_list.h"
+#include "string_buffer.h"
+#include "pointer_list.h"
+#include "alloc.h"
 
 int yylex(void);
 void yyerror(const char*);
 extern int yylineno;
 int errors = 0;
 
-// This exists because having some functions appearing after a code block
-// does not make sense and it should be a syntax error. Rather than
-// complicate the grammar, it seems better to just make a flag instead.
-int func_allowed = 0;
-int code_allowed = 0;
+typedef struct {
+    string_t* name;
+    string_t* expr;
+} rule_t;
+
+rule_t* rule;
+pointer_list_t* rlist;
+
+void init_rule(string_t* name) {
+    clear_string(rule->name);
+    clear_string(rule->expr);
+    append_string_str(rule->name, name);
+}
+
+void add_rule(string_t* str) {
+    append_string_str(rule->expr, str);
+}
+
+void print_rule(rule_t* rule) {
+    printf("%s: %s;\n", rule->name->buffer, rule->expr->buffer);
+}
+
 
 %}
 
@@ -38,38 +56,14 @@ extern int errors;
 
 %union {
     token_t* token;
-    grammar_t* grammar;
-    grammar_list_t* grammar_list;
-    grammar_rule_t* grammar_rule;
-    rule_element_list_t* rule_element_list;
-    rule_element_t* rule_element;
-    or_function_t* or_function;
-    zero_or_more_function_t* zero_or_more_function;
-    zero_or_one_function_t* zero_or_one_function;
-    one_or_more_function_t* one_or_more_function;
-    grouping_function_t* grouping_function;
-    directive_t* directive;
-    inline_code_t* inline_code;
+    rule_t* rule;
 };
 
-%token PLUS STAR QUESTION PIPE OPAREN CPAREN
+%token PLUS STAR QUESTION PIPE OPAREN CPAREN COLON SEMICOLON
 %token PRETEXT PRECODE POSTCODE POSTTEXT
 %token PROVIDES REQUIRES TERM_DEF NTERM_DEF
 %token<token> TERMINAL_SYMBOL TERMINAL_KEYWORD TERMINAL_OPER
 %token<token> CODE_BLOCK NON_TERMINAL
-
-%type <grammar> grammar
-%type <grammar_list> grammar_list
-%type <grammar_rule> grammar_rule
-%type <rule_element_list> rule_element_list
-%type <rule_element> rule_element
-%type <or_function> or_function
-%type <zero_or_more_function> zero_or_more_function
-%type <zero_or_one_function> zero_or_one_function
-%type <one_or_more_function> one_or_more_function
-%type <grouping_function> grouping_function
-%type <directive> directive
-%type <inline_code> inline_code
 
 %define parse.lac full
 %define parse.error detailed
@@ -78,6 +72,8 @@ extern int errors;
     //%output "parser.c"
     //%defines
 
+%type <rule> grammar_rule expression primary primary_list
+
 %left PIPE
 %left QUESTION STAR PLUS
 
@@ -85,217 +81,115 @@ extern int errors;
 
 grammar
     : grammar_list {
-        $$ = (grammar_t*)create_ast_node(NTERM_GRAMMAR);
-        set_root_node($$);
-        $$->grammar_list = $1;
+        printf("complete the grammar\n");
     }
     ;
 
 grammar_list
     : grammar_rule  {
-        $$ = (grammar_list_t*)create_ast_node(NTERM_GRAMMAR_LIST);
-        $$->list = create_ast_node_list();
-        append_ast_node_list($$->list, (ast_node_t*)$1);
+        printf("create the grammar rule list\n");
     }
     | grammar_list grammar_rule {
-        append_ast_node_list($$->list, (ast_node_t*)$2);
+        printf("add to the grammar rule list\n");
     }
     ;
 
 directive
     : PRETEXT CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = PRETEXT;
-        $$->code = $2;
+        printf("create PRETEXT directive\n");
     }
     | POSTTEXT CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = POSTTEXT;
-        $$->code = $2;
+        printf("create POSTTEXT directive\n");
     }
     | PRECODE CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = PRECODE;
-        $$->code = $2;
+        printf("create PRECODE directive\n");
     }
     | POSTCODE CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = POSTCODE;
-        $$->code = $2;
+        printf("create POSTCODE directive\n");
     }
     | PROVIDES CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = PROVIDES;
-        $$->code = $2;
+        printf("create PROVIDES directive\n");
     }
     | REQUIRES CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = REQUIRES;
-        $$->code = $2;
+        printf("create REQUIRES directive\n");
     }
     | TERM_DEF CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = TERM_DEF;
-        $$->code = $2;
+        printf("create TERM_DEF directive\n");
     }
     | NTERM_DEF CODE_BLOCK {
-        $$ = (directive_t*)create_ast_node(NTERM_DIRECTIVE);
-        $$->type = NTERM_DEF;
-        $$->code = $2;
+        printf("create NTERM_DEF directive\n");
     }
     ;
 
 grammar_rule
-    : NON_TERMINAL grouping_function {
-        $$ = (grammar_rule_t*)create_ast_node(NTERM_GRAMMAR_RULE);
-        $$->NON_TERMINAL = $1;
-        $$->grouping_function = $2;
-        $$->directive = NULL;
-        func_allowed = 1;
-        code_allowed = 1;
+    : NON_TERMINAL COLON {
+        $$ = create_rule($1)
+    } expression SEMICOLON {
+        printf("complete grammar rule\n");
+        print_rule($4);
     }
     | directive {
-        $$ = (grammar_rule_t*)create_ast_node(NTERM_GRAMMAR_RULE);
-        $$->NON_TERMINAL = NULL;
-        $$->grouping_function = NULL;
-        $$->directive = $1;
-        func_allowed = 1;
-        code_allowed = 1;
+        printf("complete directive\n");
     }
     ;
 
-rule_element_list
-    : rule_element {
-        $$ = (rule_element_list_t*)create_ast_node(NTERM_RULE_ELEMENT_LIST);
-        $$->list = create_ast_node_list();
-        append_ast_node_list($$->list, (ast_node_t*)$1);
-    }
-    | rule_element_list rule_element {
-        append_ast_node_list($$->list, (ast_node_t*)$2);
-    }
-    ;
-
-rule_element
+primary
     : NON_TERMINAL {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
+        printf("non-terminal: %s\n", $1->str->buffer);
+        $$ = create_string($1->str->buffer);
     }
     | TERMINAL_KEYWORD {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        //strip_quotes($1->str);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
+        printf("terminal: %s\n", $1->ptype->buffer);
+        $$ = create_string($1->str->buffer);
     }
     | TERMINAL_OPER {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        //strip_quotes($1->str);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
+        printf("terminal: %s\n", $1->ptype->buffer);
+        $$ = create_string($1->str->buffer);
     }
     | TERMINAL_SYMBOL {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->token = $1;
-        func_allowed = 1;
-        code_allowed = 1;
-    }
-    | or_function {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | zero_or_more_function {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | zero_or_one_function {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | one_or_more_function {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | grouping_function {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
-    }
-    | inline_code {
-        $$ = (rule_element_t*)create_ast_node(NTERM_RULE_ELEMENT);
-        $$->nterm = (ast_node_t*)$1;
+        printf("terminal: %s\n", $1->ptype->buffer);
+        $$ = create_string($1->str->buffer);
     }
     ;
 
-zero_or_more_function
-    : rule_element STAR {
-        if(func_allowed) {
-            $$ = (zero_or_more_function_t*)create_ast_node(NTERM_ZERO_OR_MORE_FUNCTION);
-            $$->rule_element = $1;
-            code_allowed = 1;
-        }
-        else
-            yyerror("syntax error, unexpected STAR");
+primary_list
+    : primary {
+        printf("create primary list: %s\n", $1);
+        $$ = create_string($1->buffer);
+    }
+    | primary_list primary {
+        printf("concatanate primary list: %s\n", $2);
+        append_string($1, $2->buffer);
     }
     ;
 
-zero_or_one_function
-    : rule_element QUESTION {
-        if(func_allowed) {
-            $$ = (zero_or_one_function_t*)create_ast_node(NTERM_ZERO_OR_ONE_FUNCTION);
-            $$->rule_element = $1;
-            code_allowed = 1;
-        }
-        else
-            yyerror("syntax error, unexpected QUESTION");
+expression
+    : primary_list {
+        $$ = $1;
     }
-    ;
-
-one_or_more_function
-    : rule_element PLUS {
-        if(func_allowed) {
-            $$ = (one_or_more_function_t*)create_ast_node(NTERM_ONE_OR_MORE_FUNCTION);
-            $$->rule_element = $1;
-            code_allowed = 1;
-        }
-        else
-            yyerror("syntax error, unexpected PLUS");
+    | expression STAR {
+        printf("%s*\n", $1);
+        $$ = $1;
     }
-    ;
-
-or_function
-    : rule_element PIPE {
-        func_allowed = 0;
-        code_allowed = 0;
-    } rule_element {
-        $$ = (or_function_t*)create_ast_node(NTERM_OR_FUNCTION);
-        $$->left = $1;
-        $$->right = $4;
-        func_allowed = 1;
-        code_allowed = 1;
+    | expression QUESTION {
+        printf("%s?\n", $1);
+        $$ = $1;
     }
-    ;
-
-grouping_function
-    : OPAREN rule_element_list CPAREN {
-        $$ = (grouping_function_t*)create_ast_node(NTERM_GROUPING_FUNCTION);
-        $$->rule_element_list = $2;
-        func_allowed = 1;
-        code_allowed = 1;
+    | expression PLUS {
+        printf("%s+\n", $1);
+        $$ = $1;
     }
-    ;
-
-inline_code
-    : CODE_BLOCK {
-        if(code_allowed) {
-            $$ = (inline_code_t*)create_ast_node(NTERM_INLINE_CODE);
-            $$->code = $1;
-            func_allowed = 0;
-            code_allowed = 0;
-        }
-        else
-            yyerror("syntax error, unexpected CODE_BLOCK");
+    | expression PIPE expression {
+        printf("%s|%s\n", $1, $3);
+        $$ = $1;
+    }
+    | OPAREN expression CPAREN {
+        printf("(%s)\n", $2);
+        $$ = $2;
+    }
+    | OPAREN expression CPAREN CODE_BLOCK {
+        printf("(%s){CODE}\n", $2);
+        $$ = $2;
     }
     ;
 

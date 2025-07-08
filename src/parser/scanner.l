@@ -36,6 +36,8 @@ string_t* strbuf = NULL;
 "|" { return PIPE; }
 "(" { return OPAREN; }
 ")" { return CPAREN; }
+":" { return COLON; }
+";" { return SEMICOLON; }
 
 "{" {
     depth = 0;
@@ -95,5 +97,9 @@ string_t* strbuf = NULL;
 #[^\n]* { /* ignore comment */ }
 
 [ \t\r\n\v\f]* { /* ignore whitespace */ }
+
+. {
+    fprintf(stderr, "scanner error: unknown character encountered: %c (0x%02X)", yytext[0], yytext[0]);
+}
 
 %%

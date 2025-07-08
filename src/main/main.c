@@ -42,15 +42,14 @@ int main(int argc, char** argv, char** env) {
     if(errors > 0)
         return errors;
 
-    make_raw_lists();
-    // detect_recursion();
+    // make_raw_lists();
 
-    if(find_dumper("ast")) {
-        traverse_ast();
-    }
+    // if(find_dumper("ast")) {
+    //     traverse_ast();
+    // }
 
-    if(find_dumper("master"))
-        dump_master_list();
+    // if(find_dumper("master"))
+    //     dump_master_list();
 
     return 0;
 }

@@ -1,24 +1,26 @@
 # a completely recursive grammar
-start (expr+ {})
+start:
+    (expr+) {}
+    ;
 
 # the order of the elements establishes the precedence.
-expr (
-    (sum {}) |
-    (factor {}) |
-    (primary {})
-)
+expr:
+    (sum) {} |
+    (factor) {} |
+    (primary) {}
+    ;
 
-sum (
-    (expr '+' expr {}) |
-    (expr '-' expr {})
-)
+sum:
+    (expr '+' expr) {} |
+    (expr '-' expr) {}
+    ;
 
-factor (
-    (expr '*' expr {}) |
-    (expr '/' expr {})
-)
+factor:
+    (expr '*' expr) {} |
+    (expr '/' expr) {}
+    ;
 
-primary (
+primary:
     NUMBER |
     ('(' expr ')')
-)
+    ;
