@@ -264,7 +264,12 @@ void* iterate_array_data(array_t* arr, int* post) {
  */
 void* index_array_data(array_t* arr, int index) {
 
-    return make_ptr(arr, normalize_read_index(arr, index));
+    void* ptr = NULL;
+
+    if(len_array(arr) > 0)
+        ptr = make_ptr(arr, normalize_read_index(arr, index));
+
+    return ptr;
 }
 
 /*
@@ -298,8 +303,13 @@ void push_array(array_t* arr, void* data) {
  */
 void* pop_array(array_t* arr) {
 
-    delete_array_data(arr, -1);
-    return index_array_data(arr, -1);
+    void* ptr = NULL;
+    if(arr->length > 0) {
+        ptr = &arr->buffer[arr->length-1];
+        arr->length--;
+    }
+
+    return ptr;
 }
 
 /*
@@ -307,7 +317,12 @@ void* pop_array(array_t* arr) {
  */
 void* peek_array(array_t* arr) {
 
-    return index_array_data(arr, -1);
+    void* ptr = NULL;
+    if(arr->length > 0) {
+        ptr = &arr->buffer[arr->length-1];
+    }
+
+    return ptr;
 }
 
 /*

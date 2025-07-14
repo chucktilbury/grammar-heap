@@ -5,8 +5,6 @@
 
 #include "parser.h"
 #include "cmdline.h"
-#include "master_list.h"
-#include "rule_states.h"
 #include "trace.h"
 
 int find_dumper(const char* name) {
@@ -34,22 +32,8 @@ int main(int argc, char** argv, char** env) {
 
     cmdline(argc, argv, env);
 
-    init_master_list();
     init_parser();
-
-    yyparse();
-
-    if(errors > 0)
-        return errors;
-
-    // make_raw_lists();
-
-    // if(find_dumper("ast")) {
-    //     traverse_ast();
-    // }
-
-    // if(find_dumper("master"))
-    //     dump_master_list();
+    parser();
 
     return 0;
 }

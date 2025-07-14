@@ -64,21 +64,24 @@ void push_ptr_list(pointer_list_t* lst, void* ptr) {
 
 void* pop_ptr_list(pointer_list_t* lst) {
 
+    void *ptr = NULL;
+
     if(lst->len > 0) {
+        ptr = lst->buffer[lst->len - 1];
         lst->len--;
-        return lst->buffer[lst->len];
     }
-    else
-        return NULL;
+
+    return ptr;
 }
 
 void* peek_ptr_list(pointer_list_t* lst) {
 
-    if(lst->len > 0) {
-        return lst->buffer[lst->len - 1];
-    }
-    else
-        return NULL;
+    void *ptr = NULL;
+
+    if(lst->len > 0)
+        ptr = lst->buffer[lst->len - 1];
+
+    return ptr;
 }
 
 void* iterate_ptr_list(pointer_list_t* lst, int* post) {

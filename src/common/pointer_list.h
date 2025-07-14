@@ -1,5 +1,5 @@
-#ifndef _PTR_LIST_H_
-#define _PTR_LIST_H_
+#ifndef _POINTER_LIST_H_
+#define _POINTER_LIST_H_
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -25,4 +25,4 @@ void* find_ptr_list(pointer_list_t* lst, void* key, int (*comp_func)(void*, void
 int find_ptr_list_idx(pointer_list_t* lst, void* key, int (*comp_func)(void*, void*));
 pointer_list_t* copy_ptr_list(pointer_list_t* lst);
 
-#endif /* _PTR_LIST_H_ */
+#endif /* _POINTER_LIST_H_ */

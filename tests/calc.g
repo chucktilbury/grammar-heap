@@ -1,23 +1,23 @@
 # a completely recursive grammar
 start:
-    (expr+) {}
+    (expr+) {code}
     ;
 
 # the order of the elements establishes the precedence.
 expr:
-    (sum) {} |
-    (factor) {} |
-    (primary) {}
+    (sum) {code} |
+    (factor) {code} |
+    (primary) {code}
     ;
 
 sum:
-    (expr '+' expr) {} |
-    (expr '-' expr) {}
+    (expr '+' expr) {code} |
+    (expr '-' expr) {code}
     ;
 
 factor:
-    (expr '*' expr) {} |
-    (expr '/' expr) {}
+    (expr '*' expr) {code} |
+    (expr '/' expr) {code}
     ;
 
 primary:

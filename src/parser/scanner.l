@@ -21,23 +21,87 @@ string_t* strbuf = NULL;
 
 %%
 
-"%pretext"  { return PRETEXT; }
-"%posttext" { return POSTTEXT; }
-"%precode"  { return PRECODE; }
-"%postcode" { return POSTCODE; }
-"%term_def" { return TERM_DEF; }
-"%nterm_def" { return NTERM_DEF; }
-"%provides" { return PROVIDES; }
-"%requires" { return REQUIRES; }
+"%pretext"  {
+    set_token(create_token(yytext, PRETEXT));
+    return PRETEXT;
+}
 
-"+" { return PLUS; }
-"*" { return STAR; }
-"?" { return QUESTION; }
-"|" { return PIPE; }
-"(" { return OPAREN; }
-")" { return CPAREN; }
-":" { return COLON; }
-";" { return SEMICOLON; }
+"%posttext" {
+    set_token(create_token(yytext, POSTTEXT));
+    return POSTTEXT;
+}
+
+"%precode"  {
+    set_token(create_token(yytext, PRECODE));
+    return PRECODE;
+}
+
+"%postcode" {
+    set_token(create_token(yytext, POSTCODE));
+    return POSTCODE;
+}
+
+"%term_def" {
+    set_token(create_token(yytext, TERM_DEF));
+    return TERM_DEF;
+}
+
+"%nterm_def" {
+    set_token(create_token(yytext, NTERM_DEF));
+    return NTERM_DEF;
+}
+
+"%provides" {
+    set_token(create_token(yytext, PROVIDES));
+    return PROVIDES;
+}
+
+"%requires" {
+    set_token(create_token(yytext, REQUIRES));
+    return REQUIRES;
+}
+
+
+"+" {
+    set_token(create_token(yytext, PLUS));
+    return PLUS;
+}
+
+"*" {
+    set_token(create_token(yytext, STAR));
+    return STAR;
+}
+
+"?" {
+    set_token(create_token(yytext, QUESTION));
+    return QUESTION;
+}
+
+"|" {
+    set_token(create_token(yytext, PIPE));
+    return PIPE;
+}
+
+"(" {
+    set_token(create_token(yytext, OPAREN));
+    return OPAREN;
+}
+
+")" {
+    set_token(create_token(yytext, CPAREN));
+    return CPAREN;
+}
+
+":" {
+    set_token(create_token(yytext, COLON));
+    return COLON;
+}
+
+";" {
+    set_token(create_token(yytext, SEMICOLON));
+    return SEMICOLON;
+}
+
 
 "{" {
     depth = 0;
@@ -69,28 +133,28 @@ string_t* strbuf = NULL;
     }
     else {
         BEGIN(INITIAL);
-        yylval.token = create_token(raw_string(strbuf), CODE_BLOCK);
+        set_token(create_token(raw_string(strbuf), CODE_BLOCK));
         return CODE_BLOCK;
     }
 }
 
 [a-z_][a-z0-9_]* {
-    yylval.token = create_token(yytext, NON_TERMINAL);
+    set_token(create_token(yytext, NON_TERMINAL));
     return NON_TERMINAL;
 }
 
 [A-Z_][A-Z0-9_]* {
-    yylval.token = create_token(yytext, TERMINAL_SYMBOL);
+    set_token(create_token(yytext, TERMINAL_SYMBOL));
     return TERMINAL_SYMBOL; \
 }
 
 \'[a-zA-Z_][a-zA-Z0-9_]*\' {
-    yylval.token = create_token(yytext, TERMINAL_KEYWORD);
+    set_token(create_token(yytext, TERMINAL_KEYWORD));
     return TERMINAL_KEYWORD;
 }
 
 \'[^a-zA-Z0-9_\']+\' {
-    yylval.token = create_token(yytext, TERMINAL_OPER);
+    set_token(create_token(yytext, TERMINAL_OPER));
     return TERMINAL_OPER;
 }
 
@@ -99,7 +163,8 @@ string_t* strbuf = NULL;
 [ \t\r\n\v\f]* { /* ignore whitespace */ }
 
 . {
-    fprintf(stderr, "scanner error: unknown character encountered: %c (0x%02X)", yytext[0], yytext[0]);
+    fprintf(stderr, "scanner error: %d: unknown character encountered: %c (0x%02X)", yylineno, yytext[0], yytext[0]);
+    exit(1);
 }
 
 %%
